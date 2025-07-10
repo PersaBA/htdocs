@@ -1,0 +1,95 @@
+Necesito agregar un LogOut
+===============│ CARPETAS │===============
+📁 htdocs/
+│
+├── index.php                   # Página pública
+├── login.php                   # Formulario de acceso
+├── login_process.php           # Proceso de login
+├── logout.php                  # Cierre de sesión
+├── product.php                 # Página de productos pública
+│
+├── /admin/                     # Zona administrativa
+│   ├── dashboard.php           # Panel principal de administración
+│   ├── anotaciones.txt         # Notas internas (desarrollo)
+│   │
+│   └── /include/               # Vistas cargadas dinámicamente
+│        ├── panel.php           # Bienvenida/inicio
+│        ├── usuarios.php        # Gestión de usuarios
+│        ├── productos.php       # Gestión de productos
+│        ├── categorias.php      # Gestión de categorías
+│        ├── articulos.php       # Gestión de artículos
+│        └── pagos.php           # Gestión de métodos de pago
+│
+├── /css/
+│   ├── /admin/                 # Estilos específicos del admin
+│   │      ├── admin.css
+│   │      ├── gestion.css
+│   │      ├── header.css
+│   │      └── menu.css
+│   ├── card.css
+│   ├── header.css
+│   ├── index.css
+│   ├── login.css
+│   ├── product.css
+│   └── style.css
+│
+├── /includes/                  # Componentes reutilizables globales
+│   ├── db.php                  # Conexión a la base de datos
+│   ├── header.php              # Encabezado común público
+│   ├── footer.php              # Footer común
+│   └── anotaciones.txt
+│
+├── /includes/admin/            # Partes comunes del área admin
+│   ├── auth.php                # Verificación de acceso
+│   ├── header.php              # Header del admin
+│   └── menu.php                # Menú lateral del admin
+│
+├── /process/                   # Código funcional (scripts, pruebas)
+│   ├── article.php
+│   ├── article.css
+│   ├── noticias.php
+│   ├── noticias.css
+│   └── anotaciones.txt
+│
+├── /img/                       # Imágenes generales
+│
+└── /js/                        # Scripts JavaScript (vacío por ahora)
+
+
+
+===============│ BASE DE DATOS │===============
+tiendas_props
+│
+├── articles 
+│      └── id | titulo | contenido | imagen | publicado_en
+├── categories 
+│      └── id | nombre |descripcion
+├── payment_methods
+│      └── id | nombre | descripcion | activo
+├── products
+│      └── id | nombre | descripcion | precio | imagen | categoria_id | destacado | creado_en
+└── users
+       └── id | uuid | nombre | email | password | role | created_at | updated_at
+
+
+
+
+
+
+
+
+│ /admin
+││  └── /include
+││     └── usuario.php
+││     └── productos.php
+││     └── noticias.php
+│├── anotaciones.txt
+│├── dashboard.php
+│└── vista_usuarios.php
+/admin/include/
+├── panel.php          ← contenido inicial del dashboard (opcional)
+├── usuarios.php
+├── productos.php
+├── categorias.php
+├── articulos.php
+├── pagos.php

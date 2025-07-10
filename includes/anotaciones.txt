@@ -1,0 +1,4 @@
+db.php || conexion con la base de datos
+footer.php || el pie de pagina
+header.php || el encabezado de pagina
+admin - header || el encabezado de pagina para el dashbord

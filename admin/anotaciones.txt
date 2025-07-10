@@ -1,0 +1,6 @@
+dashboard.php → el panel principal con menú de navegación
+users.php → listado y gestión de usuarios
+products.php → productos
+categories.php → categorías
+articles.php → artículos
+payments.php → métodos de pago
