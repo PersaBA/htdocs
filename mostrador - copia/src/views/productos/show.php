@@ -1,6 +1,9 @@
 <?php
-// src/views/productos/show.php
+$page_css = 'product.css';
+require_once __DIR__ . '/../../../config/config.php';
+include __DIR__ . '/../layouts/header.php';
 ?>
+
 <article class="product-detail parent">
     <div class="div1">
         <a href="<?= BASE_URL ?>" class="btn-volver">← Volver al listado</a>
@@ -19,3 +22,6 @@
             <div class="btn-consulta">Consultar</div>
         </a>
     </div>
+</article>
+
+<?php include __DIR__ . '/../layouts/footer.php'; ?>

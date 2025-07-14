@@ -22,6 +22,7 @@ class ProductController
     // GET /admin/productos
     public function index(): void
     {
+        // Mensaje flash
         $msg     = $_GET['msg'] ?? '';
         $mensaje = match ($msg) {
             'creado'    => "✅ Producto creado correctamente.",
@@ -30,6 +31,7 @@ class ProductController
             default     => ''
         };
 
+        // Consultas
         $cats = $this->conn->query("SELECT id, nombre FROM categories");
         if (!$cats) {
             http_response_code(500);
@@ -49,25 +51,26 @@ class ProductController
 
         // Si es petición AJAX, devolvemos solo la sección de productos
         if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
-            View::render(
-                'productos',
-                ['cats' => $cats, 'products' => $products, 'mensaje' => $mensaje],
-                'admin'
-            );
+            View::render('productos', [
+                'cats'     => $cats,
+                'products' => $products,
+                'mensaje'  => $mensaje
+            ]);
             exit;
         }
 
-        // Vista completa del panel admin
-        View::render(
-            'productos',
-            ['cats' => $cats, 'products' => $products, 'mensaje' => $mensaje],
-            'admin'
-        );
+        // Vista normal completa
+        View::render('productos', [
+            'cats'     => $cats,
+            'products' => $products,
+            'mensaje'  => $mensaje
+        ]);
     }
 
     // POST /admin/productos/crear
     public function crear(): void
     {
+        // Recoger y validar datos
         $nombre    = trim($_POST['nombre'] ?? '');
         $desc      = trim($_POST['descripcion'] ?? '');
         $precio    = floatval($_POST['precio'] ?? 0);
@@ -82,6 +85,7 @@ class ProductController
             die("Faltan datos obligatorios.");
         }
 
+        // Procesar imagen (opcional)
         $imagenName = null;
         if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
             $finfo = pathinfo($_FILES['imagen']['name']);
@@ -104,6 +108,7 @@ class ProductController
             );
         }
 
+        // 3) Insertar en la base
         $stmt = $this->conn->prepare(
             "INSERT INTO products
              (id, nombre, descripcion, precio, stock, imagen,
@@ -136,8 +141,8 @@ class ProductController
             die("Error al crear producto: " . $stmt->error);
         }
 
+        // Respuesta AJAX vs redirección normal
         if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
-            // recarga el index admin en modo AJAX
             $this->index();
             exit;
         }
@@ -149,8 +154,8 @@ class ProductController
     // POST /admin/productos/editar
     public function editar(): void
     {
-        // Implementar lógica de edición
-        View::render('productos/editar', [], 'admin');
+        // Aquí añadirías tu lógica de edición (validate, update, AJAX/redirección)
+        echo "<pre>El método editar() aún no está implementado.</pre>";
     }
 
     // GET /admin/productos/eliminar?id=…
@@ -162,6 +167,7 @@ class ProductController
             die("ID no válido.");
         }
 
+        // Borro imagen
         $old = $this->conn
             ->query("SELECT imagen FROM products WHERE id = $id")
             ->fetch_assoc()['imagen'];
@@ -169,8 +175,10 @@ class ProductController
             unlink($this->uploadDir . $old);
         }
 
+        // Borro producto
         $this->conn->query("DELETE FROM products WHERE id = $id");
 
+        // Respuesta AJAX vs redirección
         if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
             $this->index();
             exit;
@@ -198,14 +206,7 @@ class ProductController
                 throw new Exception("Producto no encontrado.");
             }
 
-            // Aquí usamos el layout público por defecto
-            View::render(
-                'productos/show',
-                [
-                    'producto' => $producto,
-                    'page_css' => 'product.css'
-                ]
-            );
+            View::render('productos/show', ['producto' => $producto]);
         } catch (Throwable $e) {
             http_response_code(500);
             echo "<pre>Error al cargar producto: " . htmlspecialchars($e->getMessage()) . "</pre>";

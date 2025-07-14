@@ -32,17 +32,13 @@ class AdminController
         $userCount    = $this->conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
         $productCount = $this->conn->query("SELECT COUNT(*) FROM products")->fetch_row()[0];
 
-        View::render(
-            'dashboard',
-            [
-                'meta_title' => 'Panel principal',
-                'stats'      => [
-                    'users'    => $userCount,
-                    'products' => $productCount,
-                ],
+        View::render('dashboard', [
+            'meta_title' => 'Panel principal',
+            'stats'      => [
+                'users'    => $userCount,
+                'products' => $productCount,
             ],
-            'admin'
-        );
+        ]);
     }
 
     // GET /admin/usuarios
@@ -61,23 +57,19 @@ class AdminController
                      FROM users
                      ORDER BY created_at DESC");
 
-        // petición AJAX → solo la vista parcial (sin header/footer)
+        // petición AJAX → solo la vista parcial
         if (isset($_GET['ajax'])) {
             extract(compact('usuarios', 'mensaje'), EXTR_SKIP);
             require __DIR__ . '/../views/admin/usuarios.php';
             return;
         }
 
-        // petición normal → usar layout admin
-        View::render(
-            'usuarios',
-            [
-                'meta_title' => 'Gestión de Usuarios',
-                'usuarios'   => $usuarios,
-                'mensaje'    => $mensaje,
-            ],
-            'admin'
-        );
+        // petición normal → layout completo
+        View::render('usuarios', [
+            'meta_title' => 'Gestión de Usuarios',
+            'usuarios'   => $usuarios,
+            'mensaje'    => $mensaje,
+        ]);
     }
 
     // POST /admin/usuarios/crear
@@ -194,7 +186,7 @@ class AdminController
             default     => ''
         };
 
-        $cats     = $this->conn->query("SELECT id, nombre FROM categorias");
+        $cats = $this->conn->query("SELECT id, nombre FROM categorias");
         $products = $this->conn->query("
             SELECT p.*, c.nombre AS categoria_nombre
             FROM products p
@@ -202,23 +194,17 @@ class AdminController
             ORDER BY p.created_at DESC
         ");
 
-        // petición AJAX → vista parcial
         if (isset($_GET['ajax'])) {
             extract(compact('cats', 'products', 'mensaje'), EXTR_SKIP);
             require __DIR__ . '/../views/admin/productos.php';
             return;
         }
 
-        // petición normal → layout admin
-        View::render(
-            'productos',
-            [
-                'meta_title'=> 'Gestión de Productos',
-                'cats'      => $cats,
-                'products'  => $products,
-                'mensaje'   => $mensaje
-            ],
-            'admin'
-        );
+        View::render('productos', [
+            'meta_title'=> 'Gestión de Productos',
+            'cats'      => $cats,
+            'products'  => $products,
+            'mensaje'   => $mensaje
+        ]);
     }
 }
