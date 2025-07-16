@@ -13,20 +13,47 @@ class View
      */
     public static function render(string $vista, array $data = [], string $layout = 'public'): void
     {
+        // Limpia el nombre de la vista para evitar rutas raras
+        $vista = trim($vista, '/');
+
         // Extrae variables para la vista
         extract($data, EXTR_SKIP);
 
-        if ($layout === 'admin') {
-            // Layout administración
-            require __DIR__ . '/../views/layouts/admin/admin_header.php';
-            require __DIR__ . '/../views/layouts/admin/admin_menu.php';
-            require __DIR__ . '/../views/admin/' . $vista . '.php';
-            require __DIR__ . '/../views/layouts/admin/admin_footer.php';
-        } else {
-            // Layout público (por defecto)
-            require __DIR__ . '/../views/layouts/header.php';
-            require __DIR__ . '/../views/' . $vista . '.php';
-            require __DIR__ . '/../views/layouts/footer.php';
+        // Arma la ruta final
+        $basePath = __DIR__ . '/../views/';
+        $header   = $layout === 'admin' ? 'layouts/admin/admin_header.php' : 'layouts/header.php';
+        $footer   = $layout === 'admin' ? 'layouts/admin/admin_footer.php' : 'layouts/footer.php';
+        $menu     = $layout === 'admin' ? 'layouts/admin/admin_menu.php' : null;
+        $viewPath = $layout === 'admin'
+            ? "$basePath/admin/$vista.php"
+            : "$basePath/$vista.php";
+
+        // Verifica existencia de la vista antes de cargar
+        if (!file_exists($viewPath)) {
+            http_response_code(404);
+            die("Vista '$vista' no encontrada.");
         }
+
+        require $basePath . $header;
+        if ($menu) require $basePath . $menu;
+        echo '<div class="main" id="content-area">';
+        require $viewPath;
+        echo '</div>';
+        require $basePath . $footer;
     }
+    public static function renderPartial(string $vista, array $data = []): void
+{
+    $vista = trim($vista, '/');
+    extract($data, EXTR_SKIP);
+
+    $basePath = __DIR__ . '/../views/';
+    $viewPath = "$basePath/admin/$vista.php";
+
+    if (!file_exists($viewPath)) {
+        http_response_code(404);
+        die("Vista '$vista' no encontrada.");
+    }
+
+    require $viewPath;
+}
 }

@@ -1,6 +1,4 @@
 <?php
-// src/controllers/ProductController.php
-
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/View.php';
@@ -10,7 +8,7 @@ class ProductController
     private mysqli $conn;
     private string $uploadDir;
     private array $allowedExts  = ['jpg', 'jpeg', 'png'];
-    private int   $maxFileSize = 2 * 1024 * 1024; // 2 MB
+    private int $maxFileSize    = 2 * 1024 * 1024; // 2 MB
 
     public function __construct()
     {
@@ -19,54 +17,48 @@ class ProductController
         $this->uploadDir = __DIR__ . '/../../public/img/';
     }
 
-    // GET /admin/productos
     public function index(): void
     {
-        $msg     = $_GET['msg'] ?? '';
-        $mensaje = match ($msg) {
-            'creado'    => "✅ Producto creado correctamente.",
-            'editado'   => "✏️ Producto editado correctamente.",
-            'eliminado' => "🗑️ Producto eliminado correctamente.",
-            default     => ''
+        $view   = $_GET['view'] ?? 'table';
+        $msg    = $_GET['msg']  ?? '';
+        $isAjax = ($_GET['ajax'] ?? '') === '1';
+
+        $message = match ($msg) {
+            'created' => "✅ Producto creado correctamente.",
+            'edited'  => "✏️ Producto editado correctamente.",
+            'deleted' => "🗑️ Producto eliminado correctamente.",
+            default   => ''
         };
 
         $cats = $this->conn->query("SELECT id, nombre FROM categories");
-        if (!$cats) {
-            http_response_code(500);
-            die("Error al obtener categorías: " . $this->conn->error);
+
+        switch ($view) {
+            case 'register':
+                $vista = 'productos/register';
+                $data  = ['message' => $message, 'cats' => $cats];
+                break;
+
+            case 'table':
+            default:
+                $products = $this->conn->query("
+                    SELECT p.*, c.nombre AS categoria_nombre
+                    FROM products p
+                    LEFT JOIN categories c ON p.categoria_id = c.id
+                    ORDER BY p.creado_en DESC
+                ");
+                $vista = 'productos/table';
+                $data  = ['message' => $message, 'cats' => $cats, 'products' => $products];
+                break;
         }
 
-        $products = $this->conn->query("
-            SELECT p.*, c.nombre AS categoria_nombre
-            FROM products p
-            LEFT JOIN categories c ON p.categoria_id = c.id
-            ORDER BY p.creado_en DESC
-        ");
-        if (!$products) {
-            http_response_code(500);
-            die("Error al obtener productos: " . $this->conn->error);
+        if ($isAjax) {
+            View::renderPartial($vista, $data);
+        } else {
+            View::render($vista, $data, 'admin');
         }
-
-        // Si es petición AJAX, devolvemos solo la sección de productos
-        if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
-            View::render(
-                'productos',
-                ['cats' => $cats, 'products' => $products, 'mensaje' => $mensaje],
-                'admin'
-            );
-            exit;
-        }
-
-        // Vista completa del panel admin
-        View::render(
-            'productos',
-            ['cats' => $cats, 'products' => $products, 'mensaje' => $mensaje],
-            'admin'
-        );
     }
 
-    // POST /admin/productos/crear
-    public function crear(): void
+    public function productCreate(): void
     {
         $nombre    = trim($_POST['nombre'] ?? '');
         $desc      = trim($_POST['descripcion'] ?? '');
@@ -76,6 +68,7 @@ class ProductController
         $ofertaAct = isset($_POST['oferta_activa']) ? 1 : 0;
         $ofertaMon = $ofertaAct ? floatval($_POST['oferta_monto'] ?? 0) : null;
         $ofertaTip = $ofertaAct ? ($_POST['oferta_tipo'] ?? null) : null;
+        $destacado = isset($_POST['destacado']) ? 1 : 0;
 
         if (!$nombre || !$precio || !$catId) {
             http_response_code(400);
@@ -94,31 +87,21 @@ class ProductController
             }
             if ($size > $this->maxFileSize) {
                 http_response_code(400);
-                die("La imagen excede 2 MB.");
+                die("La imagen excede el límite de tamaño.");
             }
 
             $imagenName = uniqid('prd_') . '.' . $ext;
-            move_uploaded_file(
-                $_FILES['imagen']['tmp_name'],
-                $this->uploadDir . $imagenName
-            );
-        }
-
-        $stmt = $this->conn->prepare(
-            "INSERT INTO products
-             (id, nombre, descripcion, precio, stock, imagen,
-              categoria_id, oferta_activa, oferta_monto, oferta_tipo,
-              creado_en)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())"
-        );
-        if (!$stmt) {
-            http_response_code(500);
-            die("Error en prepare(): " . $this->conn->error);
+            move_uploaded_file($_FILES['imagen']['tmp_name'], $this->uploadDir . $imagenName);
         }
 
         $uuid = uniqid('prd_', true);
+        $stmt = $this->conn->prepare("
+            INSERT INTO products
+            (id, nombre, descripcion, precio, stock, imagen, categoria_id, oferta_activa, oferta_monto, oferta_tipo, destacado, creado_en)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
         $stmt->bind_param(
-            "sssdisiids",
+            "sssdisiidsi",
             $uuid,
             $nombre,
             $desc,
@@ -128,7 +111,8 @@ class ProductController
             $catId,
             $ofertaAct,
             $ofertaMon,
-            $ofertaTip
+            $ofertaTip,
+            $destacado
         );
 
         if (!$stmt->execute()) {
@@ -136,52 +120,46 @@ class ProductController
             die("Error al crear producto: " . $stmt->error);
         }
 
-        if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
-            // recarga el index admin en modo AJAX
+        if ($_GET['ajax'] ?? '' === '1') {
+            $_GET['view'] = 'table';
+            $_GET['msg']  = 'created';
+            $_GET['ajax'] = '1';
             $this->index();
             exit;
         }
 
-        header("Location: " . BASE_URL . "admin/productos?msg=creado");
+        header("Location: " . BASE_URL . "admin/products?msg=created");
         exit;
     }
 
-    // POST /admin/productos/editar
-    public function editar(): void
+    public function productDelete(): void
     {
-        // Implementar lógica de edición
-        View::render('productos/editar', [], 'admin');
-    }
-
-    // GET /admin/productos/eliminar?id=…
-    public function eliminar(): void
-    {
-        $id = intval($_GET['id'] ?? 0);
+        $id = trim($_POST['id'] ?? '');
         if (!$id) {
             http_response_code(400);
             die("ID no válido.");
         }
 
-        $old = $this->conn
-            ->query("SELECT imagen FROM products WHERE id = $id")
-            ->fetch_assoc()['imagen'];
+        $old = $this->conn->query("SELECT imagen FROM products WHERE id = '{$id}'")->fetch_assoc()['imagen'];
         if ($old && file_exists($this->uploadDir . $old)) {
             unlink($this->uploadDir . $old);
         }
 
-        $this->conn->query("DELETE FROM products WHERE id = $id");
+        $this->conn->query("DELETE FROM products WHERE id = '{$id}'");
 
-        if (isset($_GET['ajax']) && $_GET['ajax'] == 1) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['ajax'] ?? '') === '1') {
+            $_GET['view'] = 'table';
+            $_GET['msg']  = 'deleted';
+            $_GET['ajax'] = '1';
             $this->index();
             exit;
         }
 
-        header("Location: " . BASE_URL . "admin/productos?msg=eliminado");
+        header("Location: " . BASE_URL . "admin/products?msg=deleted");
         exit;
     }
 
-    // GET /product?id=…
-    public function ver(int $id): void
+    public function view(int $id): void
     {
         try {
             $stmt = $this->conn->prepare("
@@ -198,17 +176,18 @@ class ProductController
                 throw new Exception("Producto no encontrado.");
             }
 
-            // Aquí usamos el layout público por defecto
-            View::render(
-                'productos/show',
-                [
-                    'producto' => $producto,
-                    'page_css' => 'product.css'
-                ]
-            );
+            View::render('productos/show', [
+                'producto' => $producto,
+                'page_css' => 'product.css'
+            ]);
         } catch (Throwable $e) {
             http_response_code(500);
             echo "<pre>Error al cargar producto: " . htmlspecialchars($e->getMessage()) . "</pre>";
         }
+    }
+
+    public function productEdit(): void
+    {
+        echo "<pre>A implementar: edición de producto vía UPDATE</pre>";
     }
 }

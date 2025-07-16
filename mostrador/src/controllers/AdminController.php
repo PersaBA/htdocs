@@ -1,6 +1,4 @@
 <?php
-// src/controllers/AdminController.php
-
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/auth.php';
@@ -26,71 +24,68 @@ class AdminController
         }
     }
 
-    // GET /admin/dashboard
     public function dashboard(): void
     {
         $userCount    = $this->conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
         $productCount = $this->conn->query("SELECT COUNT(*) FROM products")->fetch_row()[0];
 
-        View::render(
-            'dashboard',
-            [
-                'meta_title' => 'Panel principal',
-                'stats'      => [
-                    'users'    => $userCount,
-                    'products' => $productCount,
-                ],
-            ],
-            'admin'
-        );
+        View::render('dashboard', [
+            'meta_title' => 'Dashboard',
+            'stats'      => [
+                'users'    => $userCount,
+                'products' => $productCount,
+            ]
+        ], 'admin');
     }
 
-    // GET /admin/usuarios
-    public function usuarios(): void
+    public function users(): void
     {
-        $msg     = $_GET['msg'] ?? '';
-        $mensaje = match ($msg) {
-            'creado'    => "✅ Usuario creado correctamente.",
-            'editado'   => "✏️ Usuario editado correctamente.",
-            'eliminado' => "🗑️ Usuario eliminado correctamente.",
-            default     => ''
+        $view    = $_GET['view'] ?? 'table';
+        $msg     = $_GET['msg']  ?? '';
+        $isAjax  = ($_GET['ajax'] ?? '') === '1';
+
+        $message = match ($msg) {
+            'created' => '✅ Usuario creado correctamente.',
+            'edited'  => '✏️ Usuario actualizado.',
+            'deleted' => '🗑️ Usuario eliminado.',
+            default   => ''
         };
 
-        $usuarios = $this->conn
-            ->query("SELECT id, nombre, email, role, created_at
-                     FROM users
-                     ORDER BY created_at DESC");
+        switch ($view) {
+            case 'register':
+                $viewName = 'users/register';
+                $data = ['message' => $message];
+                break;
 
-        // petición AJAX → solo la vista parcial (sin header/footer)
-        if (isset($_GET['ajax'])) {
-            extract(compact('usuarios', 'mensaje'), EXTR_SKIP);
-            require __DIR__ . '/../views/admin/usuarios.php';
-            return;
+            case 'table':
+            default:
+                $users = $this->conn->query("
+                    SELECT id, nombre, email, role, created_at
+                    FROM users
+                    ORDER BY created_at DESC
+                ");
+                $viewName = 'users/table';
+                $data = ['users' => $users, 'message' => $message];
+                break;
         }
 
-        // petición normal → usar layout admin
-        View::render(
-            'usuarios',
-            [
-                'meta_title' => 'Gestión de Usuarios',
-                'usuarios'   => $usuarios,
-                'mensaje'    => $mensaje,
-            ],
-            'admin'
-        );
+        if ($isAjax) {
+            View::renderPartial($viewName, $data);
+        } else {
+            View::render($viewName, $data, 'admin');
+        }
     }
 
-    // POST /admin/usuarios/crear
-    public function crearUsuario(): void
+    public function userCreate(): void
     {
         try {
-            $nombre   = trim($_POST['nombre']   ?? '');
-            $email    = trim($_POST['email']    ?? '');
-            $password = $_POST['password']      ?? '';
-            $role     = $_POST['role']          ?? '';
+            $name     = trim($_POST['nombre'] ?? '');
+            $email    = trim($_POST['email']  ?? '');
+            $password = $_POST['password']    ?? '';
+            $role     = $_POST['role']        ?? '';
 
-            if (!$nombre || !$email || !$password || !$role) {
-                throw new Exception("Faltan datos obligatorios.");
+            if (!$name || !$email || !$password || !$role) {
+                throw new Exception("Faltan campos requeridos.");
             }
 
             $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ?");
@@ -98,127 +93,156 @@ class AdminController
             $stmt->execute();
             $stmt->store_result();
             if ($stmt->num_rows > 0) {
-                throw new Exception("El email ya está registrado.");
+                throw new Exception("El correo ya está registrado.");
             }
             $stmt->close();
 
-            $uuid            = uniqid('user_', true);
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT)
-                               ?: throw new Exception("Error al hashear la contraseña.");
+            $uuid = uniqid('user_', true);
+            $hash = password_hash($password, PASSWORD_DEFAULT)
+                ?: throw new Exception("Error al encriptar la contraseña.");
 
-            $stmt = $this->conn->prepare(
-                "INSERT INTO users
-                 (uuid, nombre, email, password, role, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())"
-            );
-            $stmt->bind_param("sssss", $uuid, $nombre, $email, $hashed_password, $role);
+            $stmt = $this->conn->prepare("
+                INSERT INTO users (uuid, nombre, email, password, role, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+            ");
+            $stmt->bind_param("sssss", $uuid, $name, $email, $hash, $role);
             $stmt->execute();
 
-            header("Location: " . BASE_URL . "admin/usuarios?msg=creado");
+            if (($_GET['ajax'] ?? '') === '1') {
+                $users = $this->conn->query("
+                    SELECT id, nombre, email, role, created_at
+                    FROM users
+                    ORDER BY created_at DESC
+                ");
+                View::renderPartial('users/table', [
+                    'users'   => $users,
+                    'message' => '✅ Usuario creado correctamente.'
+                ]);
+                exit;
+            }
+
+            header("Location: " . BASE_URL . "admin/usuarios?view=table&msg=created");
             exit;
         } catch (Throwable $e) {
-            echo "<pre>Error al crear usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
+            echo "<pre>❌ Error al crear usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
             exit;
         }
     }
 
-    // POST /admin/usuarios/editar
-    public function editarUsuario(): void
+    public function userEdit(): void
     {
         try {
-            $id     = intval($_POST['id']     ?? 0);
-            $nombre = trim($_POST['nombre']   ?? '');
-            $email  = trim($_POST['email']    ?? '');
-            $role   = $_POST['role']          ?? '';
+            $id    = intval($_POST['id'] ?? 0);
+            $name  = trim($_POST['nombre'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $role  = $_POST['role'] ?? '';
 
-            if ($id <= 0 || !$nombre || !$email || !$role) {
+            if ($id <= 0 || !$name || !$email || !$role) {
                 throw new Exception("Datos incompletos.");
             }
 
-            $stmt = $this->conn->prepare(
-                "SELECT id FROM users WHERE email = ? AND id != ?"
-            );
+            $stmt = $this->conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
             $stmt->bind_param("si", $email, $id);
             $stmt->execute();
             $stmt->store_result();
             if ($stmt->num_rows > 0) {
-                throw new Exception("El email ya está en uso por otro usuario.");
+                throw new Exception("El correo ya está en uso.");
             }
             $stmt->close();
 
-            $stmt = $this->conn->prepare(
-                "UPDATE users 
-                 SET nombre = ?, email = ?, role = ?, updated_at = NOW() 
-                 WHERE id = ?"
-            );
-            $stmt->bind_param("sssi", $nombre, $email, $role, $id);
+            $stmt = $this->conn->prepare("
+                UPDATE users SET nombre = ?, email = ?, role = ?, updated_at = NOW()
+                WHERE id = ?
+            ");
+            $stmt->bind_param("sssi", $name, $email, $role, $id);
             $stmt->execute();
 
-            header("Location: " . BASE_URL . "admin/usuarios?msg=editado");
+            if (($_GET['ajax'] ?? '') === '1') {
+                $users = $this->conn->query("
+                    SELECT id, nombre, email, role, created_at
+                    FROM users
+                    ORDER BY created_at DESC
+                ");
+                View::renderPartial('users/table', [
+                    'users'   => $users,
+                    'message' => '✏️ Usuario actualizado.'
+                ]);
+                exit;
+            }
+
+            header("Location: " . BASE_URL . "admin/usuarios?view=table&msg=edited");
             exit;
         } catch (Throwable $e) {
-            echo "<pre>Error al editar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
+            echo "<pre>❌ Error al editar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
             exit;
         }
     }
 
-    // GET /admin/usuarios/eliminar
-    public function eliminarUsuario(): void
+    public function userDelete(): void
     {
         try {
-            $id = intval($_GET['id'] ?? 0);
+            $id = intval($_POST['id'] ?? 0);
             if ($id <= 0) {
-                throw new Exception("ID no válido.");
+                throw new Exception("ID inválido.");
             }
 
             $stmt = $this->conn->prepare("DELETE FROM users WHERE id = ?");
             $stmt->bind_param("i", $id);
             $stmt->execute();
 
-            header("Location: " . BASE_URL . "admin/usuarios?msg=eliminado");
+            if (($_GET['ajax'] ?? '') === '1') {
+                $users = $this->conn->query("
+                    SELECT id, nombre, email, role, created_at
+                    FROM users
+                    ORDER BY created_at DESC
+                ");
+                View::renderPartial('users/table', [
+                    'users'   => $users,
+                    'message' => '🗑️ Usuario eliminado correctamente.'
+                ]);
+                exit;
+            }
+
+            header("Location: " . BASE_URL . "admin/usuarios?msg=deleted");
             exit;
         } catch (Throwable $e) {
-            echo "<pre>Error al eliminar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
+            echo "<pre>❌ Error al eliminar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
             exit;
         }
     }
 
-    // GET /admin/productos
-    public function productos(): void
+    public function products(): void
     {
         $msg     = $_GET['msg'] ?? '';
-        $mensaje = match ($msg) {
-            'creado'    => "✅ Producto creado correctamente.",
-            'editado'   => "✏️ Producto editado correctamente.",
-            'eliminado' => "🗑️ Producto eliminado correctamente.",
-            default     => ''
+        $isAjax  = ($_GET['ajax'] ?? '') === '1';
+
+        $message = match ($msg) {
+            'created' => '✅ Producto creado con éxito.',
+            'edited'  => '✏️ Producto actualizado.',
+            'deleted' => '🗑️ Producto eliminado.',
+            default   => ''
         };
 
-        $cats     = $this->conn->query("SELECT id, nombre FROM categorias");
-        $products = $this->conn->query("
+        $categories = $this->conn->query("SELECT id, nombre FROM categorias");
+        $products   = $this->conn->query("
             SELECT p.*, c.nombre AS categoria_nombre
             FROM products p
             JOIN categorias c ON c.id = p.categoria_id
             ORDER BY p.created_at DESC
         ");
 
-        // petición AJAX → vista parcial
-        if (isset($_GET['ajax'])) {
-            extract(compact('cats', 'products', 'mensaje'), EXTR_SKIP);
-            require __DIR__ . '/../views/admin/productos.php';
-            return;
-        }
+        $data = [
+            'categories' => $categories,
+            'products'   => $products,
+            'message'    => $message
+        ];
 
-        // petición normal → layout admin
-        View::render(
-            'productos',
-            [
-                'meta_title'=> 'Gestión de Productos',
-                'cats'      => $cats,
-                'products'  => $products,
-                'mensaje'   => $mensaje
-            ],
-            'admin'
-        );
+        if ($isAjax) {
+            View::renderPartial('products', $data);
+        } else {
+            View::render('products', array_merge($data, [
+                'meta_title' => 'Gestión de productos'
+            ]), 'admin');
+        }
     }
 }

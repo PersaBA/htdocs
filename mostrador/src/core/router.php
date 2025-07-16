@@ -1,179 +1,100 @@
 <?php
 // src/core/router.php
 
-// Cargar configuración global
 require_once __DIR__ . '/../../config/config.php';
 
-// Obtener la ruta limpia (sin base URL)
-$uri   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$base  = BASE_URL;
-$path  = trim(str_replace($base, '', $uri), '/');
+// Ruta limpia sin BASE_URL
+$uri  = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$base = BASE_URL;
+$path = trim(str_replace($base, '', $uri), '/');
 
+// --------------------------
+// Rutas administrativas
+// --------------------------
+$adminRoutes = [
+    'admin/dashboard'   => ['controller' => 'AdminController',     'method' => 'dashboard'],
+    'admin/usuarios'    => ['controller' => 'AdminController',     'method' => 'users'],
+    'admin/articulos'   => ['controller' => 'ArticleController',   'method' => 'index'],
+    'admin/productos'   => ['controller' => 'ProductController',   'method' => 'index'],
+    'admin/categorias'  => ['controller' => 'CategoryController',  'method' => 'index']
+];
+
+if (array_key_exists($path, $adminRoutes)) {
+    $route = $adminRoutes[$path];
+    require_once __DIR__ . "/../controllers/{$route['controller']}.php";
+    (new $route['controller'])->{$route['method']}();
+    return;
+}
+
+// --------------------------
+// Acciones POST del panel admin
+// --------------------------
+$postActions = [
+    // Usuarios
+    'admin/usuarios/crear'     => ['controller' => 'AdminController',    'method' => 'userCreate'],
+    'admin/usuarios/editar'    => ['controller' => 'AdminController',    'method' => 'userEdit'],
+    'admin/usuarios/delete'    => ['controller' => 'AdminController',    'method' => 'userDelete'],
+
+    // Artículos
+    'admin/articulos/crear'    => ['controller' => 'ArticleController',  'method' => 'articleCreate'],
+    'admin/articulos/editar'   => ['controller' => 'ArticleController',  'method' => 'articleEdit'],
+    'admin/articulos/delete'   => ['controller' => 'ArticleController',  'method' => 'articleDelete'],
+
+    // Productos
+    'admin/productos/crear'    => ['controller' => 'ProductController',  'method' => 'productCreate'],
+    'admin/productos/editar'   => ['controller' => 'ProductController',  'method' => 'productEdit'],
+    'admin/productos/delete'   => ['controller' => 'ProductController',  'method' => 'productDelete'],
+
+    // Categorías
+    'admin/categorias/crear'   => ['controller' => 'CategoryController', 'method' => 'categoryCreate'],
+    'admin/categorias/editar'  => ['controller' => 'CategoryController', 'method' => 'categoryEdit'],
+
+    'admin/categorias/delete'  => ['controller' => 'CategoryController', 'method' => 'categoryDelete']
+];
+
+if (array_key_exists($path, $postActions)) {
+    $action = $postActions[$path];
+    require_once __DIR__ . "/../controllers/{$action['controller']}.php";
+    (new $action['controller'])->{$action['method']}();
+    return;
+}
+
+// --------------------------
+// Frontend público
+// --------------------------
 switch ($path) {
-
-    /*--------------------------------------------------
-      Home
-    ---------------------------------------------------*/
     case '':
     case '/':
         require_once __DIR__ . '/../views/home/index.php';
         break;
 
-    /*--------------------------------------------------
-      Autenticación
-    ---------------------------------------------------*/
     case 'login':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once __DIR__ . '/../controllers/UserController.php';
             (new UserController())->login();
         } else {
-            require_once __DIR__ . '/../views/users/login.php';
+            require_once __DIR__ . '/../views/users/login.php'; // Carpeta separada solo para login
         }
         break;
 
     case 'logout':
-        // Destruir sesión y redirigir
         require_once __DIR__ . '/../../logout.php';
         break;
 
-    /*--------------------------------------------------
-      Admin — Dashboard (Panel principal)
-    ---------------------------------------------------*/
-case 'admin/dashboard':
-    require_once __DIR__ . '/../controllers/AdminController.php';
-    (new AdminController())->dashboard();
-    break;
-
-    /*--------------------------------------------------
-      Admin — Gestión de Usuarios
-    ---------------------------------------------------*/
-    case 'admin/usuarios':
-        require_once __DIR__ . '/../controllers/AdminController.php';
-        (new AdminController())->usuarios();
+    case 'producto':
+        if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+            require_once __DIR__ . '/../controllers/ProductController.php';
+            (new ProductController())->view((int) $_GET['id']);
+        } else {
+            echo "ID de producto no válido.";
+        }
         break;
 
-    case 'admin/usuarios/crear':
-        require_once __DIR__ . '/../controllers/AdminController.php';
-        (new AdminController())->crearUsuario();
-        break;
-
-    case 'admin/usuarios/editar':
-        require_once __DIR__ . '/../controllers/AdminController.php';
-        (new AdminController())->editarUsuario();
-        break;
-
-    case 'admin/usuarios/eliminar':
-        require_once __DIR__ . '/../controllers/AdminController.php';
-        (new AdminController())->eliminarUsuario();
-        break;
-
-    /*--------------------------------------------------
-      Admin — Gestión de Productos
-    ---------------------------------------------------*/
-    case 'admin/productos':
-        require_once __DIR__ . '/../controllers/ProductController.php';
-        (new ProductController())->index();
-        break;
-
-    case 'admin/productos/crear':
-        require_once __DIR__ . '/../controllers/ProductController.php';
-        (new ProductController())->crear();
-        break;
-
-    case 'admin/productos/editar':
-        require_once __DIR__ . '/../controllers/ProductController.php';
-        (new ProductController())->editar();
-        break;
-
-    case 'admin/productos/eliminar':
-        require_once __DIR__ . '/../controllers/ProductController.php';
-        (new ProductController())->eliminar();
-        break;
-
-    /*--------------------------------------------------
-      Admin — Gestión de Categorías
-    ---------------------------------------------------*/
-    case 'admin/categorias':
-        require_once __DIR__ . '/../controllers/CategoryController.php';
-        (new CategoryController())->index();
-        break;
-
-    case 'admin/categorias/crear':
-        require_once __DIR__ . '/../controllers/CategoryController.php';
-        (new CategoryController())->crear();
-        break;
-
-    case 'admin/categorias/editar':
-        require_once __DIR__ . '/../controllers/CategoryController.php';
-        (new CategoryController())->editar();
-        break;
-
-    case 'admin/categorias/eliminar':
-        require_once __DIR__ . '/../controllers/CategoryController.php';
-        (new CategoryController())->eliminar();
-        break;
-
-    /*--------------------------------------------------
-      Admin — Gestión de Artículos
-    ---------------------------------------------------*/
-    case 'admin/articulos':
+    case 'articulo':
         require_once __DIR__ . '/../controllers/ArticleController.php';
-        (new ArticleController())->index();
+        (new ArticleController())->publicView();
         break;
 
-    case 'admin/articulos/crear':
-        require_once __DIR__ . '/../controllers/ArticleController.php';
-        (new ArticleController())->crear();
-        break;
-
-    case 'admin/articulos/editar':
-        require_once __DIR__ . '/../controllers/ArticleController.php';
-        (new ArticleController())->editar();
-        break;
-
-    case 'admin/articulos/eliminar':
-        require_once __DIR__ . '/../controllers/ArticleController.php';
-        (new ArticleController())->eliminar();
-        break;
-
-    /*--------------------------------------------------
-      Admin — Métodos de Pago
-    ---------------------------------------------------*/
-    case 'admin/pagos':
-        require_once __DIR__ . '/../controllers/PaymentController.php';
-        (new PaymentController())->index();
-        break;
-
-    case 'admin/pagos/crear':
-        require_once __DIR__ . '/../controllers/PaymentController.php';
-        (new PaymentController())->crear();
-        break;
-
-    case 'admin/pagos/editar':
-        require_once __DIR__ . '/../controllers/PaymentController.php';
-        (new PaymentController())->editar();
-        break;
-
-    case 'admin/pagos/eliminar':
-        require_once __DIR__ . '/../controllers/PaymentController.php';
-        (new PaymentController())->eliminar();
-        break;
-
-    /*--------------------------------------------------
-      Front — Ver producto individual
-    ---------------------------------------------------*/
-case 'product':
-    if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-        require_once __DIR__ . '/../controllers/ProductController.php';
-        (new ProductController())->ver((int) $_GET['id']);
-    } else {
-        echo "ID de producto no válido.";
-    }
-    break;
-
-    /*--------------------------------------------------
-      Ruta no encontrada (404)
-    ---------------------------------------------------*/
     default:
         http_response_code(404);
         echo "Página no encontrada";
