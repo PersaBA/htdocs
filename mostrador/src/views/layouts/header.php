@@ -9,7 +9,6 @@
     <!-- Estilos base -->
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/style.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/header.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/mainPublic.css">
 
     <!-- Estilos personalizados por página -->
     <?php

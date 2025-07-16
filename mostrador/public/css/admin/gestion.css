@@ -186,6 +186,84 @@ select[multiple] {
   background: #fafafa;
 }
 
+/* edit modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  display: none;
+  /* Otros estilos como position, background, etc. */
+}
+
+
+#float-form{
+  margin-top: 0;
+}
+.modal-overlay.visible {
+  display: flex; /* o block, según tu diseño */
+}
+
+.modal-content {
+  background: #fff;
+  max-width: 640px;
+  width: 90%;
+  padding: 2rem;
+  border-radius: 8px;
+  overflow-y: auto;
+  max-height: 90vh;
+  padding-top: 1em;
+}
+.modal-close {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-size: 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* form edicion */
+form[data-ajax-form] {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.form-group label {
+  font-weight: bold;
+}
+.form-group input,
+.form-group select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 100%;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+button[type="submit"] {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+/* fin form edicion */
+
+
+/* fin edit modal */
+
 /* Responsive: tamaño de fuente en pantallas pequeñas */
 @media (max-width: 768px) {
   .admin-table th,

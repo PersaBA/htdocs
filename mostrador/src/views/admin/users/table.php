@@ -9,10 +9,10 @@
     <thead>
       <tr>
         <th>Nombre completo</th>
-        <thCorreo electrónico</th>
-          <th>Rol</th>
-          <th>Fecha de creación</th>
-          <th class="col-actions">Acciones</th>
+        <th>Correo electrónico</th>
+        <th>Rol</th>
+        <th>Fecha de creación</th>
+        <th class="col-actions">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -24,6 +24,15 @@
             <td><?= htmlspecialchars($u['role']) ?></td>
             <td><?= date('Y-m-d', strtotime($u['created_at'])) ?></td>
             <td class="col-actions">
+              <a href="#"
+                class="btn-edit"
+                data-edit
+                data-type="usuarios"
+                data-id="<?= $u['id'] ?>"
+                title="Editar usuario">
+                ✏️
+              </a>
+              
               <a href="#"
                 class="btn-delete"
                 data-ajax-delete
@@ -44,3 +53,7 @@
     </tbody>
   </table>
 </div>
+
+<script>
+  const BASE_URL = "<?= BASE_URL ?>";
+</script>

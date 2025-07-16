@@ -9,7 +9,7 @@ $base = BASE_URL;
 $path = trim(str_replace($base, '', $uri), '/');
 
 // --------------------------
-// Rutas administrativas
+// Rutas administrativas (GET tipo vista)
 // --------------------------
 $adminRoutes = [
     'admin/dashboard'   => ['controller' => 'AdminController',     'method' => 'dashboard'],
@@ -23,6 +23,21 @@ if (array_key_exists($path, $adminRoutes)) {
     $route = $adminRoutes[$path];
     require_once __DIR__ . "/../controllers/{$route['controller']}.php";
     (new $route['controller'])->{$route['method']}();
+    return;
+}
+// --------------------------
+// Acciones GET del panel admin (formularios parciales)
+// --------------------------
+$getActions = [
+    'admin/usuarios/editar-form'    => ['controller' => 'AdminController',    'method' => 'userEditForm'],
+    'admin/articulos/editar-form'   => ['controller' => 'ArticleController',  'method' => 'articleEditForm'],
+    'admin/productos/editar-form'   => ['controller' => 'ProductController',  'method' => 'productEditForm'],
+    'admin/categorias/editar-form' => ['controller' => 'CategoryController', 'method' => 'categoryEditForm']
+];
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && array_key_exists($path, $getActions)) {
+    $action = $getActions[$path];
+    require_once __DIR__ . "/../controllers/{$action['controller']}.php";
+    (new $action['controller'])->{$action['method']}();
     return;
 }
 
@@ -48,11 +63,10 @@ $postActions = [
     // Categorías
     'admin/categorias/crear'   => ['controller' => 'CategoryController', 'method' => 'categoryCreate'],
     'admin/categorias/editar'  => ['controller' => 'CategoryController', 'method' => 'categoryEdit'],
-
     'admin/categorias/delete'  => ['controller' => 'CategoryController', 'method' => 'categoryDelete']
 ];
 
-if (array_key_exists($path, $postActions)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && array_key_exists($path, $postActions)) {
     $action = $postActions[$path];
     require_once __DIR__ . "/../controllers/{$action['controller']}.php";
     (new $action['controller'])->{$action['method']}();
@@ -73,7 +87,7 @@ switch ($path) {
             require_once __DIR__ . '/../controllers/UserController.php';
             (new UserController())->login();
         } else {
-            require_once __DIR__ . '/../views/users/login.php'; // Carpeta separada solo para login
+            require_once __DIR__ . '/../views/users/login.php';
         }
         break;
 
@@ -81,7 +95,8 @@ switch ($path) {
         require_once __DIR__ . '/../../logout.php';
         break;
 
-    case 'producto':
+case 'producto':
+case 'product':
         if (isset($_GET['id']) && is_numeric($_GET['id'])) {
             require_once __DIR__ . '/../controllers/ProductController.php';
             (new ProductController())->view((int) $_GET['id']);

@@ -1,10 +1,14 @@
 <div id="toast-container"></div>
+<script>
+  const BASE_URL = "<?= BASE_URL ?>";
+</script>
 <script src="<?= BASE_URL ?>public/js/admin/ajax-reload.js"></script>
 <script src="<?= BASE_URL ?>public/js/admin/oferta-toggle.js"></script>
 <script src="<?= BASE_URL ?>public/js/admin/drag-drop.js"></script>
 <script src="<?= BASE_URL ?>public/js/admin/ajax-form.js"></script>
 <script src="<?= BASE_URL ?>public/js/admin/edit-category.js"></script>
 <script src="<?= BASE_URL ?>public/js/admin/ajax-delete.js"></script>
+<script src="<?= BASE_URL ?>public/js/admin/ajax-edit.js"></script>
 <script src="<?= BASE_URL ?>public/js/menu.js"></script>
 
 <?php if (!empty($mensaje)): ?>

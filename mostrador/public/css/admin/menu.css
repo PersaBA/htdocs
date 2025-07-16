@@ -33,7 +33,9 @@
 .admin-menu .submenu {
   display: none;
   padding-left: 1em;
-  margin-top: 0.5em;
+  padding-right: 1em;
+  background-color: var(--color-boton);
+  border-radius: 0 0 4px 4px;
 }
 
 .admin-menu .submenu.open {

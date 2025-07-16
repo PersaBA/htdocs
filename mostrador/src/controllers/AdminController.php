@@ -136,6 +136,7 @@ class AdminController
             $name  = trim($_POST['nombre'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $role  = $_POST['role'] ?? '';
+            $pass  = trim($_POST['password'] ?? '');
 
             if ($id <= 0 || !$name || !$email || !$role) {
                 throw new Exception("Datos incompletos.");
@@ -151,18 +152,29 @@ class AdminController
             $stmt->close();
 
             $stmt = $this->conn->prepare("
-                UPDATE users SET nombre = ?, email = ?, role = ?, updated_at = NOW()
-                WHERE id = ?
-            ");
+            UPDATE users SET nombre = ?, email = ?, role = ?, updated_at = NOW()
+            WHERE id = ?
+        ");
             $stmt->bind_param("sssi", $name, $email, $role, $id);
             $stmt->execute();
 
+            // 🔐 Actualizar contraseña solo si fue enviada
+            if ($pass) {
+                $hashed = password_hash($pass, PASSWORD_DEFAULT);
+                $stmt = $this->conn->prepare("
+                UPDATE users SET password = ? WHERE id = ?
+            ");
+                $stmt->bind_param("si", $hashed, $id);
+                $stmt->execute();
+            }
+
+            // 📤 Respuesta AJAX
             if (($_GET['ajax'] ?? '') === '1') {
                 $users = $this->conn->query("
-                    SELECT id, nombre, email, role, created_at
-                    FROM users
-                    ORDER BY created_at DESC
-                ");
+                SELECT id, nombre, email, role, created_at
+                FROM users
+                ORDER BY created_at DESC
+            ");
                 View::renderPartial('users/table', [
                     'users'   => $users,
                     'message' => '✏️ Usuario actualizado.'
@@ -170,12 +182,43 @@ class AdminController
                 exit;
             }
 
+            // 📍 Redirección tradicional
             header("Location: " . BASE_URL . "admin/usuarios?view=table&msg=edited");
             exit;
         } catch (Throwable $e) {
             echo "<pre>❌ Error al editar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
             exit;
         }
+    }
+
+
+    public function userEditForm(): void
+    {
+        $id = $_GET['id'] ?? '';
+
+        if (!$id || !is_numeric($id)) {
+            http_response_code(400);
+            die("ID de usuario no válido.");
+        }
+
+        $stmt = $this->conn->prepare("SELECT * FROM users WHERE id = ? LIMIT 1");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$user) {
+            http_response_code(404);
+            die("Usuario no encontrado.");
+        }
+
+        $roles = ['owner', 'admin', 'vendedor', 'gerente'];
+
+        View::renderPartial('users/edit', [
+            'user'  => $user,
+            'roles' => $roles
+        ]);
     }
 
     public function userDelete(): void
@@ -208,41 +251,6 @@ class AdminController
         } catch (Throwable $e) {
             echo "<pre>❌ Error al eliminar usuario: " . htmlspecialchars($e->getMessage()) . "</pre>";
             exit;
-        }
-    }
-
-    public function products(): void
-    {
-        $msg     = $_GET['msg'] ?? '';
-        $isAjax  = ($_GET['ajax'] ?? '') === '1';
-
-        $message = match ($msg) {
-            'created' => '✅ Producto creado con éxito.',
-            'edited'  => '✏️ Producto actualizado.',
-            'deleted' => '🗑️ Producto eliminado.',
-            default   => ''
-        };
-
-        $categories = $this->conn->query("SELECT id, nombre FROM categorias");
-        $products   = $this->conn->query("
-            SELECT p.*, c.nombre AS categoria_nombre
-            FROM products p
-            JOIN categorias c ON c.id = p.categoria_id
-            ORDER BY p.created_at DESC
-        ");
-
-        $data = [
-            'categories' => $categories,
-            'products'   => $products,
-            'message'    => $message
-        ];
-
-        if ($isAjax) {
-            View::renderPartial('products', $data);
-        } else {
-            View::render('products', array_merge($data, [
-                'meta_title' => 'Gestión de productos'
-            ]), 'admin');
         }
     }
 }

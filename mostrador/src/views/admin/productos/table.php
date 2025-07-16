@@ -48,7 +48,9 @@
               <a
                 href="#"
                 class="btn-edit"
-                data-product='<?= json_encode($p, JSON_HEX_APOS) ?>'
+                data-edit
+                data-type="productos"
+                data-id="<?= $p['id'] ?>"
                 title="Editar producto">
                 ✏️
               </a>
