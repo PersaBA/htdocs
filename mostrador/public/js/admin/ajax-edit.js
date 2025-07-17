@@ -17,7 +17,7 @@ document.addEventListener('click', async e => {
       modal = document.createElement('div');
       modal.id = 'float-form';
       modal.className = 'modal-overlay';
-      document.body.appendChild(modal);
+      document.querySelector('main')?.insertAdjacentElement('afterend', modal);
     }
 
     modal.innerHTML = `

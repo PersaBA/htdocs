@@ -1,6 +1,9 @@
 <form method="post"
       action="<?= BASE_URL ?>admin/usuarios/editar?ajax=1"
-      data-ajax-form>
+      data-ajax-form
+      class="form-block">
+
+  <h2 class="form-title">Editar usuario</h2>
 
   <input type="hidden" name="id" value="<?= $user['id'] ?>">
 
@@ -10,21 +13,23 @@
            id="edit-nombre"
            name="nombre"
            value="<?= htmlspecialchars($user['nombre']) ?>"
+           class="form-input"
            required>
   </div>
-
+  
   <div class="form-group">
     <label for="edit-email">Email</label>
     <input type="email"
            id="edit-email"
            name="email"
            value="<?= htmlspecialchars($user['email']) ?>"
+           class="form-input"
            required>
   </div>
 
   <div class="form-group">
     <label for="edit-role">Rol</label>
-    <select name="role" id="edit-role" required>
+    <select name="role" id="edit-role" class="form-input" required>
       <?php foreach ($roles as $r): ?>
         <option value="<?= $r ?>"
                 <?= $r === $user['role'] ? 'selected' : '' ?>>
@@ -39,13 +44,11 @@
     <input type="password"
            id="edit-pass"
            name="password"
+           class="form-input"
            placeholder="Dejar vacío para no modificar">
   </div>
 
   <div class="form-actions">
-    <button type="submit">💾 Guardar cambios</button>
+    <button type="submit" class="btn-primary">💾 Guardar cambios</button>
   </div>
 </form>
-<script>
-  const BASE_URL = "<?= BASE_URL ?>";
-</script>

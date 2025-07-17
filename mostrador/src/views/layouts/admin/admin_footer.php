@@ -1,4 +1,4 @@
-<div id="toast-container"></div>
+</main>
 <script>
   const BASE_URL = "<?= BASE_URL ?>";
 </script>
@@ -12,6 +12,7 @@
 <script src="<?= BASE_URL ?>public/js/menu.js"></script>
 
 <?php if (!empty($mensaje)): ?>
+  <div id="toast-container"></div>
   <script type="module">
     import { showToast } from '<?= BASE_URL ?>assets/js/toast.js';
     showToast("<?= addslashes($mensaje) ?>", "<?= $mensaje_tipo ?? 'success' ?>");

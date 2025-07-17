@@ -187,117 +187,155 @@ class ProductController
             echo "<pre>Error al cargar producto: " . htmlspecialchars($e->getMessage()) . "</pre>";
         }
     }
-public function productEditForm(): void {
-  $id = $_GET['id'] ?? null;
+    
+    public function productEditForm(): void
+    {
+        $id = $_GET['id'] ?? null;
 
-  if (!$id || !is_numeric($id)) {
-    http_response_code(400);
-    die('ID de producto no válido.');
-  }
+        if (!$id) {
+            http_response_code(400);
+            die('ID de producto no válido.');
+        }
 
-  $stmt = $this->conn->prepare("SELECT * FROM products WHERE id = ?");
-  $stmt->bind_param("i", $id);
-  $stmt->execute();
-  $result  = $stmt->get_result();
-  $product = $result->fetch_assoc();
+        $stmt = $this->conn->prepare("SELECT * FROM products WHERE id = ?");
+        $stmt->bind_param("s", $id); // 👈 usar "s" porque el ID es string
+        $stmt->execute();
+        $result  = $stmt->get_result();
+        $product = $result->fetch_assoc();
 
-  if (!$product) {
-    http_response_code(404);
-    die('Producto no encontrado.');
-  }
+        if (!$product) {
+            http_response_code(404);
+            die('Producto no encontrado.');
+        }
 
-  // 🆕 Cargar categorías como array
-  $catsResult = $this->conn->query("SELECT id, nombre FROM categories");
-  $cats = [];
-  while ($row = $catsResult->fetch_assoc()) {
-    $cats[] = $row;
-  }
+        $catsResult = $this->conn->query("SELECT id, nombre FROM categories");
+        $cats = [];
+        while ($row = $catsResult->fetch_assoc()) {
+            $cats[] = $row;
+        }
 
-  View::renderPartial('productos/edit', [
-    'product' => $product,
-    'cats'    => $cats
-  ]);
-}
-
-
-
-public function productEdit(): void {
-  $id = $_POST['id'] ?? null;
-  if (!$id || !is_numeric($id)) {
-    http_response_code(400);
-    die('ID inválido.');
-  }
-
-  // Datos principales
-  $nombre       = $_POST['nombre']       ?? '';
-  $descripcion  = $_POST['descripcion']  ?? '';
-  $precio       = $_POST['precio']       ?? 0;
-  $stock        = $_POST['stock']        ?? 0;
-  $categoria_id = $_POST['categoria_id'] ?? null;
-  $destacado    = $_POST['destacado']    ?? 0;
-
-  // Oferta
-  $oferta_activa = $_POST['oferta_activa'] ?? 0;
-  $oferta_monto  = $_POST['oferta_monto']  ?? 0;
-  $oferta_tipo   = $_POST['oferta_tipo']   ?? 'fijo';
-
-  // Imagen (opcional)
-  $imagen = null;
-  if (!empty($_FILES['imagen']['name'])) {
-    $nombreImagen = uniqid() . '-' . basename($_FILES['imagen']['name']);
-    $rutaDestino  = __DIR__ . '/../../public/uploads/' . $nombreImagen;
-
-    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
-      $imagen = $nombreImagen;
+        View::renderPartial('productos/edit', [
+            'product' => $product,
+            'cats'    => $cats
+        ]);
     }
-  }
 
-  // Preparar consulta SQL
-  $sql = "UPDATE products SET 
-            nombre = ?, 
-            descripcion = ?, 
-            precio = ?, 
-            stock = ?, 
-            categoria_id = ?, 
-            destacado = ?, 
-            oferta_activa = ?, 
-            oferta_monto = ?, 
-            oferta_tipo = ?";
+public function productEdit(): void
+{
+    $id = $_POST['id'] ?? null;
+    if (!$id) {
+        http_response_code(400);
+        die('ID inválido.');
+    }
 
-  // Imagen si se subió
-  if ($imagen) {
-    $sql .= ", imagen = ?";
-  }
+    // --- Debug payload ---
+    $debug = [
+        'post'  => $_POST,
+        'files' => $_FILES,
+    ];
 
-  $sql .= ", updated_at = NOW() WHERE id = ?";
+    // Datos principales
+    $nombre       = $_POST['nombre']       ?? '';
+    $descripcion  = $_POST['descripcion']  ?? '';
+    $precio       = $_POST['precio']       ?? 0;
+    $stock        = $_POST['stock']        ?? 0;
+    $categoria_id = $_POST['categoria_id'] ?? null;
+    $destacado    = $_POST['destacado']    ?? 0;
 
-  $stmt = $imagen 
-    ? $this->conn->prepare($sql)
-    : $this->conn->prepare(str_replace(", imagen = ?", "", $sql));
+    // Oferta
+    $oferta_activa = $_POST['oferta_activa'] ?? 0;
+    $oferta_monto  = $_POST['oferta_monto']  ?? 0;
+    $oferta_tipo   = $_POST['oferta_tipo']   ?? 'fijo';
 
-  if ($imagen) {
-    $stmt->bind_param("ssdiiiiissi", 
-      $nombre, $descripcion, $precio, $stock, $categoria_id, $destacado,
-      $oferta_activa, $oferta_monto, $oferta_tipo, $imagen, $id
-    );
-  } else {
-    $stmt->bind_param("ssdiiiiisi", 
-      $nombre, $descripcion, $precio, $stock, $categoria_id, $destacado,
-      $oferta_activa, $oferta_monto, $oferta_tipo, $id
-    );
-  }
+    // Imagen (opcional)
+    $imagen = null;
+    if (!empty($_FILES['imagen']['name'])) {
+        $nombreImagen = uniqid() . '-' . basename($_FILES['imagen']['name']);
+        $rutaDestino  = __DIR__ . '/../../public/uploads/' . $nombreImagen;
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
+            $imagen = $nombreImagen;
+        }
+    }
 
-  $stmt->execute();
+    // Preparar consulta SQL
+    $sql = "UPDATE products SET 
+        nombre = ?, 
+        descripcion = ?, 
+        precio = ?, 
+        stock = ?, 
+        categoria_id = ?, 
+        destacado = ?, 
+        oferta_activa = ?, 
+        oferta_monto = ?, 
+        oferta_tipo = ?";
 
-  // AJAX response
-  if (($_GET['ajax'] ?? '') === '1') {
-    $result = $this->conn->query("SELECT * FROM products ORDER BY updated_at DESC");
-    View::renderPartial('productos/table', ['products' => $result]);
+    if ($imagen) {
+        $sql .= ", imagen = ?";
+    }
+    $sql .= ", updated_at = NOW() WHERE id = ?";
+
+    // Preparar statement
+    if ($imagen) {
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param(
+            "ssdiiiiisssi",
+            $nombre,
+            $descripcion,
+            $precio,
+            $stock,
+            $categoria_id,
+            $destacado,
+            $oferta_activa,
+            $oferta_monto,
+            $oferta_tipo,
+            $imagen,
+            $id
+        );
+    } else {
+        // quitar ", imagen = ?" del SQL si no hay imagen
+        $stmt = $this->conn->prepare(str_replace(", imagen = ?", "", $sql));
+        $stmt->bind_param(
+            "ssdiiiiiss",
+            $nombre,
+            $descripcion,
+            $precio,
+            $stock,
+            $categoria_id,
+            $destacado,
+            $oferta_activa,
+            $oferta_monto,
+            $oferta_tipo,
+            $id
+        );
+    }
+
+    // Ejecutar y capturar errores
+    $stmt->execute();
+    $error        = $stmt->error;
+    $affectedRows = $stmt->affected_rows;
+
+    // Respuesta AJAX
+    if (($_GET['ajax'] ?? '') === '1') {
+        // obtener nuevo HTML de la tabla
+        $result = $this->conn->query("SELECT * FROM products ORDER BY updated_at DESC");
+        // capturar renderPartial en un string
+        ob_start();
+        View::renderPartial('productos/table', ['products' => $result]);
+        $html = ob_get_clean();
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'debug'        => $debug,
+            'sql_error'    => $error,
+            'affectedRows' => $affectedRows,
+            'html'         => $html,
+        ]);
+        exit;
+    }
+
+    // Redirección normal
+    header("Location: " . BASE_URL . "admin/productos");
     exit;
-  }
-
-  // Normal redirection
-  header("Location: " . BASE_URL . "admin/productos");
-  exit;
 }
+
 }

@@ -114,67 +114,6 @@ class ArticleController
         exit;
     }
 
-    public function articleEdit(): void
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            die("Método no permitido.");
-        }
-
-        $id                = intval($_POST['id'] ?? 0);
-        $title             = trim($_POST['title'] ?? '');
-        $content           = trim($_POST['content'] ?? '');
-        $author            = trim($_POST['author'] ?? 'Founder');
-        $isVisible         = isset($_POST['is_visible']) ? 1 : 0;
-        $isFeatured        = isset($_POST['is_featured']) ? 1 : 0;
-        $metaTitle         = trim($_POST['meta_title'] ?? '');
-        $metaDescription   = trim($_POST['meta_description'] ?? '');
-        $relatedProducts   = isset($_POST['related_products']) ? implode(',', $_POST['related_products']) : '';
-        $relatedCategories = isset($_POST['related_categories']) ? implode(',', $_POST['related_categories']) : '';
-
-        if ($id === 0 || $title === '' || $content === '') {
-            http_response_code(400);
-            die("Faltan campos obligatorios.");
-        }
-
-        $stmt = $this->conn->prepare("
-            UPDATE articles SET 
-              title = ?, content = ?, author = ?, is_visible = ?, is_featured = ?, 
-              meta_title = ?, meta_description = ?, related_products = ?, related_categories = ? 
-            WHERE id = ?
-        ");
-        $stmt->bind_param(
-            'sssisssssi',
-            $title,
-            $content,
-            $author,
-            $isVisible,
-            $isFeatured,
-            $metaTitle,
-            $metaDescription,
-            $relatedProducts,
-            $relatedCategories,
-            $id
-        );
-
-        if (!$stmt->execute()) {
-            http_response_code(500);
-            die("Error al actualizar el artículo: " . $stmt->error);
-        }
-
-        if (($_GET['ajax'] ?? '') === '1') {
-            $articles = $this->conn->query("SELECT * FROM articles ORDER BY published_at DESC");
-            View::renderPartial('articulos/table', [
-                'articles' => $articles,
-                'message'  => '✏️ Artículo actualizado correctamente.'
-            ]);
-            exit;
-        }
-
-        header("Location: " . BASE_URL . "admin/articulos?msg=edited");
-        exit;
-    }
-
     public function articleDelete(): void
     {
         $id = intval($_POST['id'] ?? 0);
@@ -234,10 +173,100 @@ class ArticleController
             }
         }
 
+
+
         View::render('articulo/show', [
             'article'           => $article,
             'relatedProducts'   => $relatedProducts,
             'relatedCategories' => $relatedCategories
         ], 'public');
     }
+
+    public function articleEditForm(): void
+    {
+        $id = intval($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            die("ID inválido.");
+        }
+
+        $stmt = $this->conn->prepare("SELECT * FROM articles WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $article = $stmt->get_result()->fetch_assoc();
+
+        if (!$article) {
+            http_response_code(404);
+            die("Artículo no encontrado.");
+        }
+
+        $products   = $this->conn->query("SELECT id, nombre FROM products");
+        $categories = $this->conn->query("SELECT id, nombre FROM categories");
+
+        View::renderPartial('articulos/edit', [
+            'article'    => $article,
+            'products'   => $products,
+            'categories' => $categories
+        ]);
+    }
+
+    public function articleEdit(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            die("Método no permitido.");
+        }
+
+        $id                = intval($_POST['id'] ?? 0);
+        $title             = trim($_POST['title'] ?? '');
+        $content           = trim($_POST['content'] ?? '');
+        $author            = trim($_POST['author'] ?? 'Founder');
+        $isVisible         = isset($_POST['is_visible']) ? 1 : 0;
+        $isFeatured        = isset($_POST['is_featured']) ? 1 : 0;
+        $metaTitle         = trim($_POST['meta_title'] ?? '');
+        $metaDescription   = trim($_POST['meta_description'] ?? '');
+        $relatedProducts   = isset($_POST['related_products']) ? implode(',', $_POST['related_products']) : '';
+        $relatedCategories = isset($_POST['related_categories']) ? implode(',', $_POST['related_categories']) : '';
+
+        if ($id === 0 || $title === '' || $content === '') {
+            http_response_code(400);
+            die("Faltan campos obligatorios.");
+        }
+
+        $stmt = $this->conn->prepare("
+        UPDATE articles SET 
+          title = ?, content = ?, author = ?, is_visible = ?, is_featured = ?, 
+          meta_title = ?, meta_description = ?, related_products = ?, related_categories = ?, 
+          updated_at = NOW()
+        WHERE id = ?
+    ");
+        $stmt->bind_param(
+            'sssisssssi',
+            $title,
+            $content,
+            $author,
+            $isVisible,
+            $isFeatured,
+            $metaTitle,
+            $metaDescription,
+            $relatedProducts,
+            $relatedCategories,
+            $id
+        );
+
+        if (!$stmt->execute()) {
+            http_response_code(500);
+            die("Error al actualizar el artículo: " . $stmt->error);
+        }
+
+        if (($_GET['ajax'] ?? '') === '1') {
+            $articles = $this->conn->query("SELECT * FROM articles ORDER BY published_at DESC");
+            View::renderPartial('articulos/table', [
+                'articles' => $articles,
+                'message'  => '✏️ Artículo actualizado correctamente.'
+            ]);
+            exit;
+        }
+    }
+    
 }

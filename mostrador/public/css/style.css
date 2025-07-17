@@ -1,7 +1,7 @@
 /* css/style.css - estilos generales */
 
 * {
-box-sizing: border-box;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
     text-decoration: none;
@@ -9,12 +9,17 @@ box-sizing: border-box;
 }
 
 :root {
-    --color-principal: #b49292; /* Color de marca / encabezados */
+    --color-principal: #b49292;
+    /* Color de marca / encabezados */
     --color-header: var(--color-principal);
-    --color-boton: #b37e75;    /* Botones y llamadas a la acción */
-    --color-fondo: #e9d8d5;    /* Fondo claro general */
-    --color-texto: #2b2b2b;    /* Texto principal */
-    --color-acento: #a4554a;    /* Flechas, iconos menores */
+    --color-boton: #b37e75;
+    /* Botones y llamadas a la acción */
+    --color-fondo: #e9d8d5;
+    /* Fondo claro general */
+    --color-texto: #2b2b2b;
+    /* Texto principal */
+    --color-acento: #a4554a;
+    /* Flechas, iconos menores */
 }
 
 body {

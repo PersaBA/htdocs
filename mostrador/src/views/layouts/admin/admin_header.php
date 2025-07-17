@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin/header.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin/menu.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin/admin.css">
-  <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin/gestion.css">
   <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin/toast.css">
 </head>
 <body>

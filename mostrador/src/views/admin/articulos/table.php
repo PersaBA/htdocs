@@ -27,6 +27,15 @@
             <td><?= date('Y-m-d', strtotime($a['published_at'])) ?></td>
             <td class="col-actions">
               <a href="#"
+                class="btn-edit"
+                data-edit
+                data-id="<?= $a['id'] ?>"
+                data-type="articulos"
+                title="Editar artículo">
+                ✏️
+              </a>
+
+              <a href="#"
                 class="btn-delete"
                 data-ajax-delete
                 data-url="<?= BASE_URL ?>admin/articulos/delete"

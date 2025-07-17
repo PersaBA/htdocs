@@ -144,6 +144,32 @@ class CategoryController
         header("Location: " . BASE_URL . "admin/categories?msg=edited");
         exit;
     }
+    
+public function categoryEditForm(): void
+{
+    $id = intval($_GET['id'] ?? 0);
+    if ($id <= 0) {
+        http_response_code(400);
+        die("ID inválido.");
+    }
+
+    $stmt = $this->conn->prepare("SELECT * FROM categories WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $category = $stmt->get_result()->fetch_assoc();
+
+    if (!$category) {
+        http_response_code(404);
+        die("Categoría no encontrada.");
+    }
+
+    $parents = $this->conn->query("SELECT id, nombre FROM categories WHERE id != $id");
+
+    View::renderPartial('categorias/edit', [
+        'category' => $category,
+        'parents'  => $parents
+    ]);
+}
 
     public function categoryDelete(): void
     {

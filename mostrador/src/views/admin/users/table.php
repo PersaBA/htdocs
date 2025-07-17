@@ -54,6 +54,3 @@
   </table>
 </div>
 
-<script>
-  const BASE_URL = "<?= BASE_URL ?>";
-</script>

@@ -30,9 +30,11 @@
             <td class="col-actions">
               <a
                 href="#"
-                class="btn-edit-cat"
-                data-category='<?= json_encode($cat, JSON_HEX_APOS) ?>'
-                title="Editar categoría"></a>
+                class="btn-edit"
+                data-edit
+                data-type="categorias"
+                data-id="<?= $cat['id'] ?>"
+                title="Editar categoría">
                 ✏️
               </a>
               <a
