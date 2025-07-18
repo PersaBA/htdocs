@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/View.php';
+require_once __DIR__ . '/../core/auth.php'; 
 
 class ArticleController
 {
@@ -15,6 +16,7 @@ class ArticleController
 
     public function index(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $view    = $_GET['view'] ?? 'table';
         $msg     = $_GET['msg'] ?? '';
         $isAjax  = ($_GET['ajax'] ?? '') === '1';
@@ -58,6 +60,7 @@ class ArticleController
 
     public function articleCreate(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             die("Método no permitido.");
@@ -116,6 +119,7 @@ class ArticleController
 
     public function articleDelete(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = intval($_POST['id'] ?? 0);
         if ($id <= 0) return;
 
@@ -184,6 +188,7 @@ class ArticleController
 
     public function articleEditForm(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = intval($_GET['id'] ?? 0);
         if ($id <= 0) {
             http_response_code(400);
@@ -212,6 +217,7 @@ class ArticleController
 
     public function articleEdit(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             die("Método no permitido.");

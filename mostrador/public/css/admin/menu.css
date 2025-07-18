@@ -50,5 +50,5 @@
 }
 
 .admin-menu .submenu a:hover {
-  color: var(--color_primario);
+  color: color-mix(in hsl, var(--color_primario), hsl(0, 0%, 100%) 30%);
 }

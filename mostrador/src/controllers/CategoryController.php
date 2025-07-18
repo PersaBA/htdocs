@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/View.php';
+require_once __DIR__ . '/../core/auth.php';
 
 class CategoryController
 {
@@ -15,6 +16,7 @@ class CategoryController
 
     public function index(): void
     {
+        require_once __DIR__ . '/../core/auth.php';
         $view    = $_GET['view'] ?? 'table';
         $msg     = $_GET['msg']  ?? '';
         $isAjax  = ($_GET['ajax'] ?? '') === '1';
@@ -61,6 +63,7 @@ class CategoryController
 
     public function categoryCreate(): void
     {
+        require_once __DIR__ . '/../core/auth.php';
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             die("Método no permitido.");
@@ -103,6 +106,7 @@ class CategoryController
 
     public function categoryEdit(): void
     {
+        require_once __DIR__ . '/../core/auth.php';
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             die("Método no permitido.");
@@ -144,35 +148,37 @@ class CategoryController
         header("Location: " . BASE_URL . "admin/categories?msg=edited");
         exit;
     }
-    
-public function categoryEditForm(): void
-{
-    $id = intval($_GET['id'] ?? 0);
-    if ($id <= 0) {
-        http_response_code(400);
-        die("ID inválido.");
+
+    public function categoryEditForm(): void
+    {
+        require_once __DIR__ . '/../core/auth.php';
+        $id = intval($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            http_response_code(400);
+            die("ID inválido.");
+        }
+
+        $stmt = $this->conn->prepare("SELECT * FROM categories WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $category = $stmt->get_result()->fetch_assoc();
+
+        if (!$category) {
+            http_response_code(404);
+            die("Categoría no encontrada.");
+        }
+
+        $parents = $this->conn->query("SELECT id, nombre FROM categories WHERE id != $id");
+
+        View::renderPartial('categorias/edit', [
+            'category' => $category,
+            'parents'  => $parents
+        ]);
     }
-
-    $stmt = $this->conn->prepare("SELECT * FROM categories WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $category = $stmt->get_result()->fetch_assoc();
-
-    if (!$category) {
-        http_response_code(404);
-        die("Categoría no encontrada.");
-    }
-
-    $parents = $this->conn->query("SELECT id, nombre FROM categories WHERE id != $id");
-
-    View::renderPartial('categorias/edit', [
-        'category' => $category,
-        'parents'  => $parents
-    ]);
-}
 
     public function categoryDelete(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = intval($_POST['id'] ?? 0);
         if (!$id) {
             http_response_code(400);

@@ -1,6 +1,9 @@
 
-<h2 class="form-title">👤 Crear nuevo usuario</h2>
+<?php 
+require_once __DIR__ . '/../../../core/auth.php'; 
+?>
 
+<h2 class="form-title">👤 Crear nuevo usuario</h2>
 <form method="POST"
       action="<?= BASE_URL ?>admin/usuarios/crear"
       data-ajax

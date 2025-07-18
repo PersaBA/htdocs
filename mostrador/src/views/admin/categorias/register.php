@@ -1,3 +1,7 @@
+<?php 
+require_once __DIR__ . '/../../../core/auth.php'; 
+?>
+
 <?php global $conn; ?>
 
 <h2 class="form-title">📂 Crear / Editar categoría</h2>

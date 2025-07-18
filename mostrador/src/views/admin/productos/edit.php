@@ -1,6 +1,12 @@
+
+<?php 
+require_once __DIR__ . '/../../../core/auth.php'; 
+?>
+
 <form method="POST"
       action="<?= BASE_URL ?>admin/productos/editar?ajax=1"
       data-ajax-form
+      data-ajax
       class="form-block">
 
   <h2 class="form-title">Editar producto</h2>

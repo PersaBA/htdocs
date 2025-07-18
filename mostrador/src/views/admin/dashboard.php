@@ -1,8 +1,9 @@
 <!-- src/views/admin/dashboard.php -->
 
 <?php
-// Si en el controlador pasas métricas o datos:
-// $stats = ['users' => 10, 'products' => 25];
+
+require_once __DIR__ . '/../../core/auth.php'; 
+
 ?>
 
 <h1>Panel principal</h1>

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../core/db.php';
 require_once __DIR__ . '/../core/View.php';
+require_once __DIR__ . '/../core/auth.php'; 
 
 class ProductController
 {
@@ -18,6 +19,7 @@ class ProductController
     }
     public function index(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $view   = $_GET['view'] ?? 'table';
         $msg    = $_GET['msg']  ?? '';
         $isAjax = ($_GET['ajax'] ?? '') === '1';
@@ -58,6 +60,7 @@ class ProductController
     }
     public function productCreate(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $nombre    = trim($_POST['nombre'] ?? '');
         $desc      = trim($_POST['descripcion'] ?? '');
         $precio    = floatval($_POST['precio'] ?? 0);
@@ -134,6 +137,7 @@ class ProductController
 
     public function productDelete(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = trim($_POST['id'] ?? '');
         if (!$id) {
             http_response_code(400);
@@ -187,9 +191,10 @@ class ProductController
             echo "<pre>Error al cargar producto: " . htmlspecialchars($e->getMessage()) . "</pre>";
         }
     }
-    
+
     public function productEditForm(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = $_GET['id'] ?? null;
 
         if (!$id) {
@@ -220,45 +225,46 @@ class ProductController
         ]);
     }
 
-public function productEdit(): void
-{
-    $id = $_POST['id'] ?? null;
-    if (!$id) {
-        http_response_code(400);
-        die('ID inválido.');
-    }
-
-    // --- Debug payload ---
-    $debug = [
-        'post'  => $_POST,
-        'files' => $_FILES,
-    ];
-
-    // Datos principales
-    $nombre       = $_POST['nombre']       ?? '';
-    $descripcion  = $_POST['descripcion']  ?? '';
-    $precio       = $_POST['precio']       ?? 0;
-    $stock        = $_POST['stock']        ?? 0;
-    $categoria_id = $_POST['categoria_id'] ?? null;
-    $destacado    = $_POST['destacado']    ?? 0;
-
-    // Oferta
-    $oferta_activa = $_POST['oferta_activa'] ?? 0;
-    $oferta_monto  = $_POST['oferta_monto']  ?? 0;
-    $oferta_tipo   = $_POST['oferta_tipo']   ?? 'fijo';
-
-    // Imagen (opcional)
-    $imagen = null;
-    if (!empty($_FILES['imagen']['name'])) {
-        $nombreImagen = uniqid() . '-' . basename($_FILES['imagen']['name']);
-        $rutaDestino  = __DIR__ . '/../../public/uploads/' . $nombreImagen;
-        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
-            $imagen = $nombreImagen;
+    public function productEdit(): void
+    {
+        require_once __DIR__ . '/../core/auth.php'; 
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            http_response_code(400);
+            die('ID inválido.');
         }
-    }
 
-    // Preparar consulta SQL
-    $sql = "UPDATE products SET 
+        // --- Debug payload ---
+        $debug = [
+            'post'  => $_POST,
+            'files' => $_FILES,
+        ];
+
+        // Datos principales
+        $nombre       = $_POST['nombre']       ?? '';
+        $descripcion  = $_POST['descripcion']  ?? '';
+        $precio       = $_POST['precio']       ?? 0;
+        $stock        = $_POST['stock']        ?? 0;
+        $categoria_id = $_POST['categoria_id'] ?? null;
+        $destacado    = $_POST['destacado']    ?? 0;
+
+        // Oferta
+        $oferta_activa = $_POST['oferta_activa'] ?? 0;
+        $oferta_monto  = $_POST['oferta_monto']  ?? 0;
+        $oferta_tipo   = $_POST['oferta_tipo']   ?? 'fijo';
+
+        // Imagen (opcional)
+        $imagen = null;
+        if (!empty($_FILES['imagen']['name'])) {
+            $nombreImagen = uniqid() . '-' . basename($_FILES['imagen']['name']);
+            $rutaDestino  = __DIR__ . '/../../public/uploads/' . $nombreImagen;
+            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
+                $imagen = $nombreImagen;
+            }
+        }
+
+        // Preparar consulta SQL
+        $sql = "UPDATE products SET 
         nombre = ?, 
         descripcion = ?, 
         precio = ?, 
@@ -269,73 +275,77 @@ public function productEdit(): void
         oferta_monto = ?, 
         oferta_tipo = ?";
 
-    if ($imagen) {
-        $sql .= ", imagen = ?";
-    }
-    $sql .= ", updated_at = NOW() WHERE id = ?";
+        if ($imagen) {
+            $sql .= ", imagen = ?";
+        }
+        $sql .= ", updated_at = NOW() WHERE id = ?";
 
-    // Preparar statement
-    if ($imagen) {
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param(
-            "ssdiiiiisssi",
-            $nombre,
-            $descripcion,
-            $precio,
-            $stock,
-            $categoria_id,
-            $destacado,
-            $oferta_activa,
-            $oferta_monto,
-            $oferta_tipo,
-            $imagen,
-            $id
-        );
-    } else {
-        // quitar ", imagen = ?" del SQL si no hay imagen
-        $stmt = $this->conn->prepare(str_replace(", imagen = ?", "", $sql));
-        $stmt->bind_param(
-            "ssdiiiiiss",
-            $nombre,
-            $descripcion,
-            $precio,
-            $stock,
-            $categoria_id,
-            $destacado,
-            $oferta_activa,
-            $oferta_monto,
-            $oferta_tipo,
-            $id
-        );
-    }
+        // Preparar statement
+        if ($imagen) {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param(
+                "ssdiiiiisssi",
+                $nombre,
+                $descripcion,
+                $precio,
+                $stock,
+                $categoria_id,
+                $destacado,
+                $oferta_activa,
+                $oferta_monto,
+                $oferta_tipo,
+                $imagen,
+                $id
+            );
+        } else {
+            // quitar ", imagen = ?" del SQL si no hay imagen
+            $stmt = $this->conn->prepare(str_replace(", imagen = ?", "", $sql));
+            $stmt->bind_param(
+                "ssdiiiiiss",
+                $nombre,
+                $descripcion,
+                $precio,
+                $stock,
+                $categoria_id,
+                $destacado,
+                $oferta_activa,
+                $oferta_monto,
+                $oferta_tipo,
+                $id
+            );
+        }
 
-    // Ejecutar y capturar errores
-    $stmt->execute();
-    $error        = $stmt->error;
-    $affectedRows = $stmt->affected_rows;
+        // Ejecutar y capturar errores
+        $stmt->execute();
+        $error        = $stmt->error;
+        $affectedRows = $stmt->affected_rows;
 
-    // Respuesta AJAX
-    if (($_GET['ajax'] ?? '') === '1') {
-        // obtener nuevo HTML de la tabla
-        $result = $this->conn->query("SELECT * FROM products ORDER BY updated_at DESC");
-        // capturar renderPartial en un string
-        ob_start();
-        View::renderPartial('productos/table', ['products' => $result]);
-        $html = ob_get_clean();
+        // Respuesta AJAX
+        if (($_GET['ajax'] ?? '') === '1') {
+            // obtener nuevo HTML de la tabla
+            $result = $this->conn->query("
+    SELECT products.*, categories.nombre AS categoria_nombre
+    FROM products
+    LEFT JOIN categories ON products.categoria_id = categories.id
+    ORDER BY products.updated_at DESC
+");
+            // capturar renderPartial en un string
+            ob_start();
+            View::renderPartial('productos/table', ['products' => $result]);
+            $html = ob_get_clean();
 
-        header('Content-Type: application/json');
-        echo json_encode([
-            'debug'        => $debug,
-            'sql_error'    => $error,
-            'affectedRows' => $affectedRows,
-            'html'         => $html,
-        ]);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'debug'        => $debug,
+                'sql_error'    => $error,
+                'affectedRows' => $affectedRows,
+                'html'         => $html,
+            ]);
+            exit;
+        }
+
+        // Redirección normal
+        header("Location: " . BASE_URL . "admin/productos");
         exit;
     }
-
-    // Redirección normal
-    header("Location: " . BASE_URL . "admin/productos");
-    exit;
-}
-
 }

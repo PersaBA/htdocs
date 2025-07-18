@@ -1,6 +1,8 @@
 <?php
+require_once __DIR__ . '/../../../core/auth.php'; 
 $requiredScripts = ['admin/drag-drop.js' , 'admin/oferta-toggle.js'];
 ?>
+
 
 <h2 class="form-title">📦 Crear / Editar producto</h2>
 

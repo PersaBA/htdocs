@@ -17,20 +17,20 @@ mostrador/
 │   │   ├── index.css
 │   │   ├── login.css
 │   │   ├── product.css
-│   │   └── styles.css
+│   │   ├── styles.css
+│   │   └── temas.css.php
 │   ├── js/
-│   │   ├── admin.js
 │   │   ├── main.js
 │   │   ├── menu.js
-│   │   ├── toast.js
-│   │   └── admin/
-│   │       ├── ajax-delete.js
-│   │       ├── ajax-edit.js
-│   │       ├── ajax-form.js
-│   │       ├── ajax-reload.js
-│   │       ├── drag-drop.js
-│   │       ├── edit-category.js
-│   │       └── oferta-toggle.js
+│   │   ├── admin/
+│   │   │   ├── ajax-delete.js
+│   │   │   ├── ajax-edit.js
+│   │   │   ├── ajax-form.js
+│   │   │   ├── ajax-reload.js
+│   │   │   ├── drag-drop.js
+│   │   │   └── oferta-toggle.js
+│   │   └── _unused/
+│   │       └── toast.js
 │   └── img/assets/
 │       │   └── default.png
 │       └── (imágenes subidas)
@@ -67,8 +67,7 @@ mostrador/
 │   │   │   │   ├── table.php
 │   │   │   │   ├── edit.php
 │   │   │   │   └── register.php
-│   │   │   │  
-│   │   │   └── dashboardd.php  
+│   │   │   └── dashboard.php  
 │   │   │   
 │   │   ├── articulo/
 │   │   │   └── show.php

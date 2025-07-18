@@ -12,6 +12,7 @@ class SettingsController
 
     public function __construct()
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         global $conn;
         $this->conn = $conn;
 
@@ -26,6 +27,7 @@ class SettingsController
 
     public function index(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $view   = $_GET['view'] ?? 'table';
         $msg    = $_GET['msg']  ?? '';
         $isAjax = ($_GET['ajax'] ?? '') === '1';
@@ -59,126 +61,128 @@ class SettingsController
         }
     }
 
-public function settingsCreate(): void
-{
-    $clave = $_POST['clave'] ?? '';
-    $valor = $_POST['valor'] ?? '';
-    $tipo  = $_POST['tipo'] ?? 'texto';
+    public function settingsCreate(): void
+    {
+        require_once __DIR__ . '/../core/auth.php'; 
+        $clave = $_POST['clave'] ?? '';
+        $valor = $_POST['valor'] ?? '';
+        $tipo  = $_POST['tipo'] ?? 'texto';
 
-    if (!$clave || !$valor) {
-        http_response_code(400);
-        die("Datos incompletos.");
-    }
+        if (!$clave || !$valor) {
+            http_response_code(400);
+            die("Datos incompletos.");
+        }
 
-    // Verificar duplicado
-    $stmtCheck = $this->conn->prepare("SELECT id FROM settings WHERE clave = ?");
-    $stmtCheck->bind_param("s", $clave);
-    $stmtCheck->execute();
-    $resCheck = $stmtCheck->get_result();
+        // Verificar duplicado
+        $stmtCheck = $this->conn->prepare("SELECT id FROM settings WHERE clave = ?");
+        $stmtCheck->bind_param("s", $clave);
+        $stmtCheck->execute();
+        $resCheck = $stmtCheck->get_result();
 
-    if ($resCheck->num_rows > 0) {
-        http_response_code(409);
-        die("❌ La clave '$clave' ya existe.");
-    }
+        if ($resCheck->num_rows > 0) {
+            http_response_code(409);
+            die("❌ La clave '$clave' ya existe.");
+        }
 
-    // Insertar
-    $stmt = $this->conn->prepare("INSERT INTO settings (clave, valor, tipo) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $clave, $valor, $tipo);
-    $stmt->execute();
+        // Insertar
+        $stmt = $this->conn->prepare("INSERT INTO settings (clave, valor, tipo) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $clave, $valor, $tipo);
+        $stmt->execute();
 
-    $error        = $stmt->error;
-    $affectedRows = $stmt->affected_rows;
+        $error        = $stmt->error;
+        $affectedRows = $stmt->affected_rows;
 
-    // AJAX response
-    if (($_GET['ajax'] ?? '') === '1') {
-        $result = $this->conn->query("SELECT * FROM settings ORDER BY id DESC");
+        // AJAX response
+        if (($_GET['ajax'] ?? '') === '1') {
+            $result = $this->conn->query("SELECT * FROM settings ORDER BY id DESC");
 
-        ob_start();
-        View::renderPartial('configuraciones/table', ['settings' => $result->fetch_all(MYSQLI_ASSOC)]);
-        $html = ob_get_clean();
+            ob_start();
+            View::renderPartial('configuraciones/table', ['settings' => $result->fetch_all(MYSQLI_ASSOC)]);
+            $html = ob_get_clean();
 
-        header('Content-Type: application/json');
-        echo json_encode([
-            'sql_error'    => $error,
-            'affectedRows' => $affectedRows,
-            'html'         => $html
-        ]);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'sql_error'    => $error,
+                'affectedRows' => $affectedRows,
+                'html'         => $html
+            ]);
+            exit;
+        }
+
+        // Redirección normal
+        header("Location: " . BASE_URL . "admin/configuraciones");
         exit;
     }
 
-    // Redirección normal
-    header("Location: " . BASE_URL . "admin/configuraciones");
-    exit;
-}
+    public function settingsEditForm(): void
+    {
+        require_once __DIR__ . '/../core/auth.php'; 
+        $id = $_GET['id'] ?? null;
 
+        if (!$id) {
+            http_response_code(400);
+            die('ID de configuración no válido.');
+        }
 
-public function settingsEditForm(): void
-{
-    $id = $_GET['id'] ?? null;
+        $stmt = $this->conn->prepare("SELECT * FROM settings WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $config = $result->fetch_assoc();
 
-    if (!$id) {
-        http_response_code(400);
-        die('ID de configuración no válido.');
-    }
+        if (!$config) {
+            http_response_code(404);
+            die('Configuración no encontrada.');
+        }
 
-    $stmt = $this->conn->prepare("SELECT * FROM settings WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $config = $result->fetch_assoc();
-
-    if (!$config) {
-        http_response_code(404);
-        die('Configuración no encontrada.');
-    }
-
-    View::renderPartial('configuraciones/edit', [
-        'config' => $config
-    ]);
-}
-
-public function settingsEdit(): void
-{
-    $id    = $_POST['id']    ?? null;
-    $clave = $_POST['clave'] ?? '';
-    $valor = $_POST['valor'] ?? '';
-    $tipo  = $_POST['tipo']  ?? 'texto';
-
-    if (!$id || !$clave || !$valor) {
-        http_response_code(400);
-        die("Datos inválidos.");
-    }
-
-    $stmt = $this->conn->prepare("UPDATE settings SET clave = ?, valor = ?, tipo = ?, updated_at = NOW() WHERE id = ?");
-    $stmt->bind_param("sssi", $clave, $valor, $tipo, $id);
-    $stmt->execute();
-
-    $error        = $stmt->error;
-    $affectedRows = $stmt->affected_rows;
-
-    if (($_GET['ajax'] ?? '') === '1') {
-        $result = $this->conn->query("SELECT * FROM settings ORDER BY updated_at DESC");
-
-        ob_start();
-        View::renderPartial('configuraciones/table', ['settings' => $result->fetch_all(MYSQLI_ASSOC)]);
-        $html = ob_get_clean();
-
-        header('Content-Type: application/json');
-        echo json_encode([
-            'sql_error'    => $error,
-            'affectedRows' => $affectedRows,
-            'html'         => $html
+        View::renderPartial('configuraciones/edit', [
+            'config' => $config
         ]);
+    }
+
+    public function settingsEdit(): void
+    {
+        require_once __DIR__ . '/../core/auth.php'; 
+        $id    = $_POST['id']    ?? null;
+        $clave = $_POST['clave'] ?? '';
+        $valor = $_POST['valor'] ?? '';
+        $tipo  = $_POST['tipo']  ?? 'texto';
+
+        if (!$id || !$clave || !$valor) {
+            http_response_code(400);
+            die("Datos inválidos.");
+        }
+
+        $stmt = $this->conn->prepare("UPDATE settings SET clave = ?, valor = ?, tipo = ?, updated_at = NOW() WHERE id = ?");
+        $stmt->bind_param("sssi", $clave, $valor, $tipo, $id);
+        $stmt->execute();
+
+        $error        = $stmt->error;
+        $affectedRows = $stmt->affected_rows;
+
+        if (($_GET['ajax'] ?? '') === '1') {
+            $result = $this->conn->query("SELECT * FROM settings ORDER BY updated_at DESC");
+
+            ob_start();
+            View::renderPartial('configuraciones/table', ['settings' => $result->fetch_all(MYSQLI_ASSOC)]);
+            $html = ob_get_clean();
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'sql_error'    => $error,
+                'affectedRows' => $affectedRows,
+                'html'         => $html
+            ]);
+            exit;
+        }
+
+        header("Location: " . BASE_URL . "admin/configuraciones");
         exit;
     }
-
-    header("Location: " . BASE_URL . "admin/configuraciones");
-    exit;
-}
-
 
     public function settingsDelete(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         try {
             $id = intval($_POST['id'] ?? 0);
 

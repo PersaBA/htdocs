@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../core/auth.php'; 
 $requiredScripts = ['admin/ajax-edit.js','admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'  ];
 ?>
 

@@ -1,3 +1,8 @@
+
+<?php 
+require_once __DIR__ . '/../../../core/auth.php'; 
+?>
+
 <form method="post"
       action="<?= BASE_URL ?>admin/usuarios/editar?ajax=1"
       data-ajax-form

@@ -26,6 +26,7 @@ class AdminController
 
     public function dashboard(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $userCount    = $this->conn->query("SELECT COUNT(*) FROM users")->fetch_row()[0];
         $productCount = $this->conn->query("SELECT COUNT(*) FROM products")->fetch_row()[0];
 
@@ -40,6 +41,7 @@ class AdminController
 
     public function users(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $view    = $_GET['view'] ?? 'table';
         $msg     = $_GET['msg']  ?? '';
         $isAjax  = ($_GET['ajax'] ?? '') === '1';
@@ -78,6 +80,7 @@ class AdminController
 
     public function userCreate(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         try {
             $name     = trim($_POST['nombre'] ?? '');
             $email    = trim($_POST['email']  ?? '');
@@ -131,6 +134,7 @@ class AdminController
 
     public function userEdit(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         try {
             $id    = intval($_POST['id'] ?? 0);
             $name  = trim($_POST['nombre'] ?? '');
@@ -190,10 +194,9 @@ class AdminController
             exit;
         }
     }
-
-
     public function userEditForm(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         $id = $_GET['id'] ?? '';
 
         if (!$id || !is_numeric($id)) {
@@ -220,9 +223,9 @@ class AdminController
             'roles' => $roles
         ]);
     }
-
     public function userDelete(): void
     {
+        require_once __DIR__ . '/../core/auth.php'; 
         try {
             $id = intval($_POST['id'] ?? 0);
             if ($id <= 0) {

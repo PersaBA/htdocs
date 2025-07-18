@@ -1,6 +1,9 @@
+
 <?php
+require_once __DIR__ . '/../../../core/auth.php'; 
 $requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'];
 ?>
+
 <div class="table-block">
     <h2 class="table-title">🛠️ Configuraciones del sistema</h2>
 

@@ -1,4 +1,7 @@
-<?php global $conn; ?>
+<?php 
+require_once __DIR__ . '/../../../core/auth.php'; 
+global $conn; 
+?>
 
 <h2 class="form-title">📝 Publicar nuevo artículo</h2>
 
