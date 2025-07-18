@@ -1,9 +1,8 @@
 /**
- * ajax-form.js
+ * ajax-form.js actualizado
  *
- * Intercepta envíos de formularios marcados con data-ajax,
- * envía la petición por fetch y recarga la sección correspondiente
- * usando AdminAjax.recargar() y AdminAjax.getBasePath().
+ * Intercepta formularios con data-ajax,
+ * envía por fetch y actualiza .main según el tipo de respuesta.
  */
 
 document.body.addEventListener('submit', async e => {
@@ -11,7 +10,6 @@ document.body.addEventListener('submit', async e => {
   if (!form.matches('form[data-ajax]')) return;
   e.preventDefault();
 
-  // Construir URL con ?ajax=1
   const url = new URL(form.action, location.origin);
   url.searchParams.set('ajax', '1');
 
@@ -23,10 +21,24 @@ document.body.addEventListener('submit', async e => {
       credentials: 'same-origin'
     });
 
-    // Calcular ruta base sin /crear o /editar
-    const base = AdminAjax.getBasePath(form.action, /\/(crear|editar)$/);
+    const contentType = res.headers.get('Content-Type') || '';
 
-    // Si hay redirección (302) o OK, recargar y resetear
+    // 🧠 Si la respuesta es JSON con HTML, actualiza directamente
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      if (data.html) {
+        document.querySelector('.main').innerHTML = data.html;
+        form.reset();
+        return;
+      } else {
+        console.error('Respuesta JSON sin HTML:', data);
+        alert('❌ Error al guardar. Mirá la consola.');
+        return;
+      }
+    }
+
+    // 🧠 Si es redirección o HTML parcial, usa AdminAjax
+    const base = AdminAjax.getBasePath(form.action, /\/(crear|editar)$/);
     if (res.status === 302 || res.ok) {
       await AdminAjax.recargar(base);
       form.reset();
@@ -34,6 +46,7 @@ document.body.addEventListener('submit', async e => {
       console.error(await res.text());
       alert('❌ Error al guardar. Mirá la consola.');
     }
+
   } catch (err) {
     console.error(err);
     console.log('Form enviado a:', form.action);

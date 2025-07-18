@@ -97,7 +97,7 @@ class CategoryController
             exit;
         }
 
-        header("Location: " . BASE_URL . "admin/categories?msg=created");
+        header("Location: " . BASE_URL . "admin/categorias?msg=created");
         exit;
     }
 

@@ -34,7 +34,7 @@ nav a p {
 
 nav a:hover {
     text-decoration: underline;
-    background-color: var(--color-boton);
+    background-color: var(--color_boton);
 }
 
 @media screen and (max-width: 768px) {
@@ -57,5 +57,4 @@ nav a:hover {
         justify-content: center;
         align-self: center;
     }
-
 }

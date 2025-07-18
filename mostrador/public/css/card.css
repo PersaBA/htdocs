@@ -1,11 +1,11 @@
 .card-producto {
     display: block;
-    background: white;
+    background: var(--color_fondo);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     overflow: hidden;
-    text-decoration: none; /* quita el subrayado */
-    color: inherit; /* hereda color del texto */
+    text-decoration: none;
+    color: var(--color_texto);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -27,8 +27,8 @@
 .btn-ver-mas {
     display: inline-block;
     margin-top: 15px;
-    background-color: #222;
-    color: white;
+    background-color: var(--color_boton);
+    color: var(--color_texto);
     padding: 8px 16px;
     border-radius: 4px;
     font-weight: bold;

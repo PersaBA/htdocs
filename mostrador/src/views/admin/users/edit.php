@@ -1,6 +1,7 @@
 <form method="post"
       action="<?= BASE_URL ?>admin/usuarios/editar?ajax=1"
       data-ajax-form
+      data-ajax
       class="form-block">
 
   <h2 class="form-title">Editar usuario</h2>

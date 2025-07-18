@@ -1,5 +1,5 @@
 <?php
-// src/views/admin/articles/table.php
+$requiredScripts = ['admin/ajax-edit.js','admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'  ];
 ?>
 
 <h2 class="table-title">📚 Artículos existentes</h2>

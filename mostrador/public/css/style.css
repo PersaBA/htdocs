@@ -8,39 +8,22 @@
     color: inherit;
 }
 
-:root {
-    --color-principal: #b49292;
-    /* Color de marca / encabezados */
-    --color-header: var(--color-principal);
-    --color-boton: #b37e75;
-    /* Botones y llamadas a la acción */
-    --color-fondo: #e9d8d5;
-    /* Fondo claro general */
-    --color-texto: #2b2b2b;
-    /* Texto principal */
-    --color-acento: #a4554a;
-    /* Flechas, iconos menores */
-}
-
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: var(--color-fondo);
-    color: #333;
+    background-color: var(--color_fondo);
+    color: var(--color_texto);
 }
 
 header,
 footer {
-    background-color: var(--color-header);
+    background-color: var(--color_header);
     text-align: center;
     height: 10dvh;
 }
 
-
-
 main {
-
     margin: 0 auto;
     min-height: 80dvh;
 }
@@ -49,5 +32,3 @@ footer p {
     margin: 0;
     font-size: 0.9em;
 }
-
-/* Aquí podés agregar más estilos generales comunes a todo el sitio */

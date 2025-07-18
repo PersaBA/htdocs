@@ -1,3 +1,7 @@
+<?php
+$requiredScripts = ['admin/drag-drop.js' , 'admin/oferta-toggle.js'];
+?>
+
 <h2 class="form-title">📦 Crear / Editar producto</h2>
 
 <form method="POST"

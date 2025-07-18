@@ -1,0 +1,23 @@
+main.dashboard-layout {
+  display: flex;
+  width: 100dvw;
+  height: 90vh;
+  margin: 0;
+  background-color: var(--color_fondo);
+  color: var(--color_texto);
+}
+
+aside.menu {
+  width: 20%;
+  background-color: var(--color_header);
+  color: var(--color_texto);
+  /* el resto de estilos para tu menú */
+}
+
+section.content-area {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  background-color: var(--color_fondo);
+  color: var(--color_texto);
+}

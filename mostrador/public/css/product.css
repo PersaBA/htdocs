@@ -3,7 +3,7 @@
     min-width: 768px;
     width: 80%;
     margin: 0px auto;
-    background: white;
+    background: var(--color_fondo);
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -67,10 +67,9 @@
 }
 
 .btn-volver:hover {
-    background-color: var(--color-boton);
-    color: #eaeaea;
+    background-color: var(--color_boton);
+    color: var(--color_texto);
 }
-
 
 .div3 {
     overflow: hidden;
@@ -101,11 +100,11 @@
 
 .div4>p>span {
     font-weight: bold;
-    color: black;
+    color: var(--color_texto);
     position: absolute;
     font-weight: bold;
     top: -1.2rem;
-    background-color: var(--color-principal);
+    background-color: var(--color_acento);
     font-size: .8rem;
     padding: 1px 5px;
 }
@@ -117,17 +116,12 @@
     padding-right: 1rem;
 }
 
-
 .product-detail p {
     font-size: 1.1rem;
-    color: #444;
+    color: var(--color_texto);
     margin: 12px 0;
     line-height: 1.5;
 }
-
-
-
-
 
 /* Animación de entrada suave */
 @keyframes fadeIn {
@@ -169,7 +163,7 @@
         width: 100%;
     }
 
-    .div4{
+    .div4 {
         align-content: space-evenly;
         height: 100%;
     }

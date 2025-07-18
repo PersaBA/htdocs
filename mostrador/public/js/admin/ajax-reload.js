@@ -1,9 +1,4 @@
 /**
- * ajax-reload.js
- * Carga parcial de .main vía AJAX y re-inicializa funciones interactivas
- */
-
-/**
  * Carga dentro de .main la ruta indicada (añade ?ajax=1)
  * @param {string} path  Ruta base (ej: "/mostrador/admin/usuarios")
  */

@@ -1,5 +1,5 @@
 <?php
-// src/views/admin/users/table.php
+$requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'];
 ?>
 
 <h2 class="table-title">👥 Usuarios registrados</h2>

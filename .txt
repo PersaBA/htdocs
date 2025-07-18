@@ -1,0 +1,101 @@
+mostrador/
+├── public/
+│   ├── index.php
+│   ├── .htaccess
+│   ├── css/
+│   │   ├── admin/
+│   │   │   ├── dashboard-layout.css
+│   │   │   ├── form-style.css
+│   │   │   ├── header.css
+│   │   │   ├── menu.css
+│   │   │   ├── modal-style.css
+│   │   │   ├── shared.css
+│   │   │   ├── table-style.css
+│   │   │   └── toast.css
+│   │   ├── card.css
+│   │   ├── header.css
+│   │   ├── index.css
+│   │   ├── login.css
+│   │   ├── product.css
+│   │   └── styles.css
+│   ├── js/
+│   │   ├── admin.js
+│   │   ├── main.js
+│   │   ├── menu.js
+│   │   ├── toast.js
+│   │   └── admin/
+│   │       ├── ajax-delete.js
+│   │       ├── ajax-edit.js
+│   │       ├── ajax-form.js
+│   │       ├── ajax-reload.js
+│   │       ├── drag-drop.js
+│   │       ├── edit-category.js
+│   │       └── oferta-toggle.js
+│   └── img/assets/
+│       │   └── default.png
+│       └── (imágenes subidas)
+│
+├── src/
+│   ├── controllers/
+│   │   ├── AdminController.php
+│   │   ├── ArticleController.php
+│   │   ├── CategoryController.php
+│   │   ├── PaymentController.php
+│   │   ├── ProductController.php
+│   │   ├── SettingsController.php
+│   │   └── userController.php
+│   │
+│   ├── views/
+│   │   ├── admin/
+│   │   │   ├── articulos/
+│   │   │   │    ├── edit.php
+│   │   │   │    ├── register.php
+│   │   │   │    └── table.php
+│   │   │   ├── categorias/
+│   │   │   │   ├── table.php
+│   │   │   │   ├── edit.php
+│   │   │   │   └── register.php
+│   │   │   ├── configuraciones/
+│   │   │   │   ├── table.php
+│   │   │   │   ├── edit.php
+│   │   │   │   └── register.php
+│   │   │   ├── productos/
+│   │   │   │   ├── table.php
+│   │   │   │   ├── edit.php
+│   │   │   │   └── register.php
+│   │   │   ├── user/
+│   │   │   │   ├── table.php
+│   │   │   │   ├── edit.php
+│   │   │   │   └── register.php
+│   │   │   │  
+│   │   │   └── dashboardd.php  
+│   │   │   
+│   │   ├── articulo/
+│   │   │   └── show.php
+│   │   ├── home/
+│   │   │   └── index.php
+│   │   ├── layout/
+│   │   │   ├── admin/
+│   │   │   │    ├── admin_footer.php
+│   │   │   │    ├── admin_header.php
+│   │   │   │    └── admin_menu.php
+│   │   │   ├── footer.php
+│   │   │   └── header.php
+│   │   ├── productos/
+│   │   │   └── show.php
+│   │   └── user/
+│   │       └── login.php
+│   └── core/
+│       ├── auth.php
+│       ├── db.php
+│       ├── router.php
+│       └── view.php
+│
+├── config/
+│   ├── .env
+│   └── config.php
+│
+├── .htaccess
+├── logout.php
+├── composer.json
+└── README.md

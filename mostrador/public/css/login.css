@@ -1,6 +1,5 @@
-
 .login-box {
-    background: white;
+    background: var(--color_fondo);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -12,29 +11,31 @@
 
 .login-box h1 {
     margin-bottom: 20px;
-    color: var(--color-principal, #b49292);
+    color: var(--color_primario);
 }
 
 .login-box h3 {
     text-align: left;
     margin: 15px 0 5px;
     font-size: 0.95rem;
-    color: var(--color-texto, #2b2b2b);
+    color: var(--color_texto);
 }
 
 .login-box input {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color_acento);
     border-radius: 4px;
+    background-color: #fff;
+    color: var(--color_texto);
 }
 
 .login-box button {
     margin-top: 20px;
     width: 100%;
     padding: 10px;
-    background: var(--color-boton, #b37e75);
-    color: white;
+    background: var(--color_boton);
+    color: #fff;
     border: none;
     border-radius: 4px;
     font-weight: bold;

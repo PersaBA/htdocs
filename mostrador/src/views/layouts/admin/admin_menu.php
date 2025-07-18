@@ -31,5 +31,13 @@
         <li><a href="<?= BASE_URL ?>admin/categorias?view=table">📂 Lista de categorías</a></li>
       </ul>
     </li>
+
+    <li class="menu-item">
+      <span class="toggle">Configuraciones</span>
+      <ul class="submenu">
+        <li><a href="<?= BASE_URL ?>admin/configuraciones?view=register">⚙️ Nueva configuración</a></li>
+        <li><a href="<?= BASE_URL ?>admin/configuraciones?view=table">🗂️ Lista de configuraciones</a></li>
+      </ul>
+    </li>
   </ul>
 </div>

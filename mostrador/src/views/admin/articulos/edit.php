@@ -1,6 +1,7 @@
 <form method="POST"
       action="<?= BASE_URL ?>admin/articulos/editar"
       data-ajax-form
+      data-ajax
       class="form-block">
 
   <h2 class="form-title">Editar artículo</h2>
