@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../core/auth.php'; 
-$requiredScripts = ['admin/ajax-edit.js','admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'  ];
+require_once __DIR__ . '/../../../core/auth.php';
+$requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'];
 ?>
 
 <h2 class="table-title">📚 Artículos existentes</h2>
@@ -18,7 +18,7 @@ $requiredScripts = ['admin/ajax-edit.js','admin/ajax-form.js', 'admin/ajax-delet
       </tr>
     </thead>
     <tbody>
-      <?php if ($articles->num_rows): ?>
+      <?php if ($articles && $articles instanceof mysqli_result && $articles->num_rows): ?>
         <?php while ($a = $articles->fetch_assoc()): ?>
           <tr>
             <td><?= htmlspecialchars($a['title']) ?></td>
@@ -54,5 +54,6 @@ $requiredScripts = ['admin/ajax-edit.js','admin/ajax-form.js', 'admin/ajax-delet
         </tr>
       <?php endif; ?>
     </tbody>
+
   </table>
 </div>

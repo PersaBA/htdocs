@@ -27,9 +27,9 @@ require_once __DIR__ . '/../../../core/auth.php';
 
   <div class="form-group">
     <label for="edit-precio">Precio</label>
-    <input type="number" id="edit-precio" name="precio"
+    <input type="text" id="edit-precio" name="precio"
            value="<?= htmlspecialchars($product['precio']) ?>"
-           step="0.01" class="form-input" required>
+           step="0.01" class="form-input" required data-format="money"> 
   </div>
 
   <div class="form-group">
@@ -99,3 +99,5 @@ require_once __DIR__ . '/../../../core/auth.php';
     <button type="submit" class="btn-primary">💾 Guardar cambios</button>
   </div>
 </form>
+
+<script src="../../public/js/admin/number-format.js"></script>

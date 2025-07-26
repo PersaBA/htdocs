@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../core/auth.php'; 
-$requiredScripts = ['admin/drag-drop.js' , 'admin/oferta-toggle.js'];
+$requiredScripts = ['admin/drag-drop.js' , 'admin/oferta-toggle.js', 'admin/number-format.js'];
 ?>
 
 
@@ -27,7 +27,7 @@ $requiredScripts = ['admin/drag-drop.js' , 'admin/oferta-toggle.js'];
   <div class="form-group-inline">
     <div class="form-group">
       <label for="precio">Precio:</label>
-      <input type="number" id="precio" name="precio" step="0.01" required>
+      <input type="text" id="precio" name="precio" step="0.01" required data-format="money">
     </div>
     <div class="form-group">
       <label for="stock">Stock:</label>

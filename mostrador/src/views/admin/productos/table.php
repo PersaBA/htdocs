@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../core/auth.php'; 
-$requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'];
+$requiredScripts = ['admin/number-format.js', 'admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-delete.js', 'admin/ajax-reload.js'];
 ?>
 
 
@@ -21,7 +21,7 @@ $requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-dele
       </tr>
     </thead>
     <tbody>
-      <?php if ($products && $products->num_rows): ?>
+  <?php if ($products && $products instanceof mysqli_result && $products->num_rows): ?>
         <?php while ($p = $products->fetch_assoc()): ?>
           <tr>
             <td class="text-center">
@@ -33,14 +33,14 @@ $requiredScripts = ['admin/ajax-edit.js', 'admin/ajax-form.js', 'admin/ajax-dele
               <?php endif; ?>
             </td>
             <td><?= htmlspecialchars($p['nombre']) ?></td>
-            <td>$<?= number_format($p['precio'], 2, ',', '.') ?></td>
+            <td>$<?= number_format($p['precio'] / 100, 2, ',', '.') ?></td>
             <td class="text-center"><?= $p['stock'] ?></td>
             <td><?= htmlspecialchars($p['categoria_nombre']) ?></td>
             <td>
               <?php if ($p['oferta_activa']): ?>
                 <?= $p['oferta_tipo'] === 'porcentaje'
                   ? htmlspecialchars($p['oferta_monto']) . '%'
-                  : '$' . number_format($p['oferta_monto'], 2, ',', '.') ?>
+                  : '$' . number_format($p['oferta_monto']) ?>
               <?php else: ?>
                 —
               <?php endif; ?>
